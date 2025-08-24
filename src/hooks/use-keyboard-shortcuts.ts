@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { useSidebarContext } from '@/components/sidebar-provider'
+import { useSidebarState } from './use-sidebar-state'
 
 export function useKeyboardShortcuts() {
-  const { cycle, collapse, expand } = useSidebarContext()
+  const { cycle, collapse, expand, isHidden } = useSidebarState()
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -13,8 +13,8 @@ export function useKeyboardShortcuts() {
         return
       }
 
-      // [ key: Collapse sidebar
-      if (event.key === '[' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      // [ key: Collapse sidebar (only if not hidden)
+      if (event.key === '[' && !event.ctrlKey && !event.metaKey && !event.altKey && !isHidden) {
         const target = event.target as HTMLElement
         // Don't trigger if user is typing in an input
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
@@ -24,8 +24,8 @@ export function useKeyboardShortcuts() {
         }
       }
 
-      // ] key: Expand sidebar
-      if (event.key === ']' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      // ] key: Expand sidebar (only if not hidden)
+      if (event.key === ']' && !event.ctrlKey && !event.metaKey && !event.altKey && !isHidden) {
         const target = event.target as HTMLElement
         // Don't trigger if user is typing in an input
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
@@ -38,5 +38,5 @@ export function useKeyboardShortcuts() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [cycle, collapse, expand])
+  }, [cycle, collapse, expand, isHidden])
 }

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { SidebarProvider } from '@/components/sidebar-provider'
-import { AppLayout } from '@/components/app-layout'
-import { Sidebar } from '@/components/sidebar'
-import { Header } from '@/components/header'
+import { BrowserRouter } from 'react-router-dom'
+import { AppLayout } from '@/components/layout/app-layout'
+import { Sidebar } from '@/components/sidebar/sidebar'
+import { Header } from '@/components/layout/header'
 import { AppRouter } from '@/components/app-router'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { Toaster } from '@/components/ui/sonner'
@@ -40,10 +40,10 @@ function AppContent() {
 
 function App() {
   return (
-    <SidebarProvider>
+    <BrowserRouter>
       <AppContent />
       <Toaster />
-    </SidebarProvider>
+    </BrowserRouter>
   )
 }
 
