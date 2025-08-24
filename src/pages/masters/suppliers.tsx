@@ -321,7 +321,6 @@ function SupplierForm() {
 // Main page component
 export function SuppliersPage() {
   const { isOpen, entity, mode, id, closeModal } = useCrudModal()
-  const suppliersApi = useSuppliersApi()
 
   const showModal = isOpen && entity === 'suppliers'
 
@@ -333,7 +332,7 @@ export function SuppliersPage() {
         subtitle="Manage supplier information and contacts"
         icon={Users}
         columns={columns}
-        useEntityHooks={suppliersApi}
+        useEntityHooks={useSuppliersApi}
       />
 
       <CrudModal
@@ -343,7 +342,7 @@ export function SuppliersPage() {
         open={showModal}
         onOpenChange={closeModal}
         schema={supplierSchema}
-        useEntityHooks={suppliersApi}
+        useEntityHooks={useSuppliersApi}
       >
         <SupplierForm />
       </CrudModal>

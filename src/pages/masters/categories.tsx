@@ -194,7 +194,6 @@ function CategoryForm() {
 // Main page component
 export function CategoriesPage() {
   const { isOpen, entity, mode, id, closeModal } = useCrudModal()
-  const categoriesApi = useCategoriesApi()
 
   const showModal = isOpen && entity === 'categories'
 
@@ -206,7 +205,7 @@ export function CategoriesPage() {
         subtitle="Manage product categories and subcategories"
         icon={Layers}
         columns={columns}
-        useEntityHooks={categoriesApi}
+        useEntityHooks={useCategoriesApi}
       />
 
       <CrudModal
@@ -216,7 +215,7 @@ export function CategoriesPage() {
         open={showModal}
         onOpenChange={closeModal}
         schema={categorySchema}
-        useEntityHooks={categoriesApi}
+        useEntityHooks={useCategoriesApi}
       >
         <CategoryForm />
       </CrudModal>

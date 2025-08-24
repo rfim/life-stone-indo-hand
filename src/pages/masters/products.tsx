@@ -634,7 +634,6 @@ function ProductForm() {
 // Main page component
 export function ProductsPage() {
   const { isOpen, entity, mode, id, closeModal } = useCrudModal()
-  const productsApi = useProductsApi()
 
   const showModal = isOpen && entity === 'products'
 
@@ -646,7 +645,7 @@ export function ProductsPage() {
         subtitle="Manage product catalog and pricing"
         icon={Grid}
         columns={columns}
-        useEntityHooks={productsApi}
+        useEntityHooks={useProductsApi}
       />
 
       <CrudModal
@@ -656,7 +655,7 @@ export function ProductsPage() {
         open={showModal}
         onOpenChange={closeModal}
         schema={productSchema}
-        useEntityHooks={productsApi}
+        useEntityHooks={useProductsApi}
       >
         <ProductForm />
       </CrudModal>
