@@ -28,8 +28,16 @@ export function Header() {
 
   return (
     <>
-      <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-        <div className="flex items-center justify-between h-full px-4">
+      <header 
+        className={cn(
+          "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40",
+          isMobile ? "h-14" : "h-16"
+        )}
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)'
+        }}
+      >
+        <div className={cn("flex items-center justify-between h-full", isMobile ? "px-3" : "px-6")}>
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
             {isMobile && (
@@ -40,7 +48,7 @@ export function Header() {
                   setMobileMenuOpen(true)
                   if (isHidden) expand()
                 }}
-                className="lg:hidden"
+                className="lg:hidden h-9 w-9 p-0"
                 aria-label="Toggle sidebar"
               >
                 <Menu className="h-4 w-4" />
@@ -99,6 +107,18 @@ export function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
+            )}
+
+            {/* Mobile app title */}
+            {isMobile && (
+              <div className="flex items-center gap-2">
+                <img 
+                  src="/logo.svg" 
+                  alt="Life Stone Indonesia" 
+                  className="w-6 h-6 rounded"
+                />
+                <span className="font-semibold text-sm">Life Stone</span>
               </div>
             )}
           </div>

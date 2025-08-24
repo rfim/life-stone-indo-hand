@@ -5,9 +5,11 @@ import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { AppRouter } from '@/components/app-router'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Toaster } from '@/components/ui/sonner'
 
 function AppContent() {
+  const isMobile = useIsMobile()
   useKeyboardShortcuts()
 
   useEffect(() => {
@@ -16,18 +18,25 @@ function AppContent() {
     const savedWidth = localStorage.getItem('ls.sidebar.width') || '264'
     
     const root = document.documentElement
-    if (savedState === 'hidden') {
+    
+    // Mobile devices use drawer instead of persistent sidebar
+    if (isMobile) {
       root.style.setProperty('--sidebar-width', '0px')
-    } else if (savedState === 'collapsed') {
-      root.style.setProperty('--sidebar-width', '72px')
     } else {
-      root.style.setProperty('--sidebar-width', `${savedWidth}px`)
+      if (savedState === 'hidden') {
+        root.style.setProperty('--sidebar-width', '0px')
+      } else if (savedState === 'collapsed') {
+        root.style.setProperty('--sidebar-width', '72px')
+      } else {
+        root.style.setProperty('--sidebar-width', `${savedWidth}px`)
+      }
     }
-  }, [])
+  }, [isMobile])
 
   return (
     <AppLayout>
-      <Sidebar />
+      {/* Sidebar is hidden on mobile, shown via drawer instead */}
+      {!isMobile && <Sidebar />}
       <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1">
