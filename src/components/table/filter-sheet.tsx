@@ -81,14 +81,14 @@ export function FilterSheet({
           <div className="space-y-2">
             <Label htmlFor="status-filter">Status</Label>
             <Select
-              value={filters.status || ''}
-              onValueChange={(value) => handleFilterChange('status', value || undefined)}
+              value={filters.status || '__all__'}
+              onValueChange={(value) => handleFilterChange('status', value === '__all__' ? undefined : value)}
             >
               <SelectTrigger id="status-filter">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="__all__">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -126,14 +126,14 @@ export function FilterSheet({
           <div className="space-y-2">
             <Label htmlFor="category-filter">Category</Label>
             <Select
-              value={filters.category || ''}
-              onValueChange={(value) => handleFilterChange('category', value || undefined)}
+              value={filters.category || '__all__'}
+              onValueChange={(value) => handleFilterChange('category', value === '__all__' ? undefined : value)}
             >
               <SelectTrigger id="category-filter">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="__all__">All categories</SelectItem>
                 <SelectItem value="category-1">Category 1</SelectItem>
                 <SelectItem value="category-2">Category 2</SelectItem>
                 <SelectItem value="category-3">Category 3</SelectItem>
@@ -172,14 +172,14 @@ export function FilterSheet({
           <div className="space-y-2">
             <Label htmlFor="location-filter">Location</Label>
             <Select
-              value={filters.location || ''}
-              onValueChange={(value) => handleFilterChange('location', value || undefined)}
+              value={filters.location || '__all__'}
+              onValueChange={(value) => handleFilterChange('location', value === '__all__' ? undefined : value)}
             >
               <SelectTrigger id="location-filter">
                 <SelectValue placeholder="All locations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All locations</SelectItem>
+                <SelectItem value="__all__">All locations</SelectItem>
                 <SelectItem value="jakarta">Jakarta</SelectItem>
                 <SelectItem value="surabaya">Surabaya</SelectItem>
                 <SelectItem value="bandung">Bandung</SelectItem>

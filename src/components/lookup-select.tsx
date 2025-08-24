@@ -140,17 +140,17 @@ export function LookupSelect({
             </SelectTrigger>
             <SelectContent>
               {isLoading && (
-                <SelectItem value="" disabled>
+                <SelectItem value="__loading__" disabled>
                   Loading...
                 </SelectItem>
               )}
               {fetchError && (
-                <SelectItem value="" disabled>
+                <SelectItem value="__error__" disabled>
                   Error loading data
                 </SelectItem>
               )}
               {!isLoading && options.length === 0 && (
-                <SelectItem value="" disabled>
+                <SelectItem value="__no_items__" disabled>
                   No items found
                 </SelectItem>
               )}
@@ -194,17 +194,17 @@ export function LookupSelect({
         </SelectTrigger>
         <SelectContent>
           {isLoading && (
-            <SelectItem value="" disabled>
+            <SelectItem value="__loading__" disabled>
               Loading...
             </SelectItem>
           )}
           {fetchError && (
-            <SelectItem value="" disabled>
+            <SelectItem value="__error__" disabled>
               Error loading data
             </SelectItem>
           )}
           {!isLoading && options.length === 0 && (
-            <SelectItem value="" disabled>
+            <SelectItem value="__no_items__" disabled>
               No items found
             </SelectItem>
           )}
