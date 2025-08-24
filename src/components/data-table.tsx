@@ -1,341 +1,433 @@
-import { useState } from 'react'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Download, 
-  Upload, 
-  FileText, 
-  Plus,
-  Funnel,
-  Columns,
-  MagnifyingGlass
-} from '@phosphor-icons/react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  ColumnDef,
+  SortingState,
+  ColumnFiltersState,
+  VisibilityState,
+  PaginationState,
+} from '@tanstack/react-table'
+import { useQuery } from '@tanstack/react-query'
+import { ChevronDown, ChevronUp, Eye, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { ListChrome, ViewMode } from '@/components/table/list-chrome'
+import { CardList } from '@/components/table/card-list'
+import { useCrudModal } from '@/components/forms/crud-modal'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+import { BaseEntity, ListParams } from '@/lib/db/connection'
 
-interface Column<T> {
-  key: keyof T
-  label: string
-  sortable?: boolean
-  width?: string
-  render?: (value: any, record: T) => React.ReactNode
-}
-
-interface DataTableProps<T> {
+interface DataTableProps<T extends BaseEntity> {
+  entity: string
   title: string
   subtitle?: string
-  data: T[]
-  columns: Column<T>[]
-  loading?: boolean
-  error?: string | null
-  totalCount?: number
-  currentPage?: number
-  pageSize?: number
-  onPageChange?: (page: number) => void
-  onSearch?: (query: string) => void
-  onSort?: (column: keyof T, direction: 'asc' | 'desc') => void
-  onCreateClick?: () => void
-  onExportClick?: () => void
-  onImportClick?: () => void
-  onTemplateClick?: () => void
-  createButtonText?: string
-  searchPlaceholder?: string
+  icon?: React.ComponentType<{ className?: string }>
+  columns: ColumnDef<T>[]
+  useEntityHooks: () => {
+    useList: (params: ListParams) => any
+    useDelete: () => any
+    useExport: () => any
+    useImport: () => any
+  }
+  onRowClick?: (row: T) => void
   showActions?: boolean
+  showCreate?: boolean
+  className?: string
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends BaseEntity>({
+  entity,
   title,
   subtitle,
-  data,
+  icon,
   columns,
-  loading = false,
-  error = null,
-  totalCount = 0,
-  currentPage = 1,
-  pageSize = 10,
-  onPageChange,
-  onSearch,
-  onSort,
-  onCreateClick,
-  onExportClick,
-  onImportClick,
-  onTemplateClick,
-  createButtonText = "Create",
-  searchPlaceholder = "Search...",
-  showActions = true
+  useEntityHooks,
+  onRowClick,
+  showActions = true,
+  showCreate = true,
+  className
 }: DataTableProps<T>) {
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set())
-  const [searchQuery, setSearchQuery] = useState('')
-  const [sortColumn, setSortColumn] = useState<keyof T | null>(null)
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-
-  const totalPages = Math.ceil(totalCount / pageSize)
-  const startEntry = (currentPage - 1) * pageSize + 1
-  const endEntry = Math.min(currentPage * pageSize, totalCount)
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    onSearch?.(query)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isMobile = useIsMobile()
+  const { openModal } = useCrudModal()
+  
+  // Table state from URL
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const pageSize = parseInt(searchParams.get('pageSize') || '25', 10)
+  const q = searchParams.get('q') || ''
+  const sortBy = searchParams.get('sortBy') || ''
+  const sortDir = (searchParams.get('sortDir') || 'desc') as 'asc' | 'desc'
+  const viewMode = (searchParams.get('view') || 'table') as ViewMode
+  
+  // Parse filters from URL
+  const filtersParam = searchParams.get('filters')
+  const filters = useMemo(() => {
+    try {
+      return filtersParam ? JSON.parse(filtersParam) : {}
+    } catch {
+      return {}
+    }
+  }, [filtersParam])
+  
+  // Parse visible columns from URL
+  const columnsParam = searchParams.get('columns')
+  const visibleColumns = useMemo(() => {
+    try {
+      return columnsParam ? JSON.parse(columnsParam) : {}
+    } catch {
+      return {}
+    }
+  }, [columnsParam])
+  
+  // Local state
+  const [rowSelection, setRowSelection] = useState({})
+  
+  // API hooks
+  const { useList, useDelete, useExport, useImport } = useEntityHooks()
+  
+  // Fetch data
+  const { data: result, isLoading, error, refetch } = useList({
+    page,
+    pageSize,
+    q: q || undefined,
+    sortBy: sortBy || undefined,
+    sortDir,
+    filters: Object.keys(filters).length > 0 ? filters : undefined
+  })
+  
+  // Mutations
+  const deleteMutation = useDelete()
+  const exportMutation = useExport()
+  const importMutation = useImport()
+  
+  const data = result?.data || []
+  const total = result?.total || 0
+  
+  // Add actions column if needed
+  const enhancedColumns = useMemo(() => {
+    const baseColumns = [...columns]
+    
+    // Add selection column
+    baseColumns.unshift({
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      meta: { priority: 1 }
+    })
+    
+    // Add actions column
+    if (showActions) {
+      baseColumns.push({
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => openModal(entity, 'view', row.original.id)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openModal(entity, 'edit', row.original.id)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleDelete(row.original.id)}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+        meta: { priority: 1 }
+      })
+    }
+    
+    return baseColumns
+  }, [columns, showActions, entity, openModal])
+  
+  // Table setup
+  const table = useReactTable({
+    data,
+    columns: enhancedColumns,
+    state: {
+      sorting: sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : [],
+      columnFilters: [],
+      columnVisibility: visibleColumns,
+      rowSelection,
+      pagination: { pageIndex: page - 1, pageSize }
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: (sorting) => {
+      const newParams = new URLSearchParams(searchParams)
+      if (typeof sorting === 'function') {
+        const currentSorting = sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : []
+        const newSorting = sorting(currentSorting)
+        if (newSorting.length > 0) {
+          newParams.set('sortBy', newSorting[0].id)
+          newParams.set('sortDir', newSorting[0].desc ? 'desc' : 'asc')
+        } else {
+          newParams.delete('sortBy')
+          newParams.delete('sortDir')
+        }
+      }
+      newParams.set('page', '1') // Reset to first page
+      setSearchParams(newParams)
+    },
+    onColumnVisibilityChange: (visibility) => {
+      const newParams = new URLSearchParams(searchParams)
+      if (typeof visibility === 'function') {
+        const newVisibility = visibility(visibleColumns)
+        newParams.set('columns', JSON.stringify(newVisibility))
+      }
+      setSearchParams(newParams)
+    },
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+    pageCount: Math.ceil(total / pageSize),
+  })
+  
+  // Event handlers
+  const updateUrl = (updates: Record<string, string | null>) => {
+    const newParams = new URLSearchParams(searchParams)
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        newParams.delete(key)
+      } else {
+        newParams.set(key, value)
+      }
+    })
+    setSearchParams(newParams)
   }
-
-  const handleSort = (column: keyof T) => {
-    const newDirection = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc'
-    setSortColumn(column)
-    setSortDirection(newDirection)
-    onSort?.(column, newDirection)
+  
+  const handleSearchChange = (value: string) => {
+    updateUrl({ q: value || null, page: '1' })
   }
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedRows(new Set(data.map((_, index) => index)))
-    } else {
-      setSelectedRows(new Set())
+  
+  const handleViewModeChange = (mode: ViewMode) => {
+    updateUrl({ view: mode })
+  }
+  
+  const handlePageChange = (newPage: number) => {
+    updateUrl({ page: newPage.toString() })
+  }
+  
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteMutation.mutateAsync(id)
+        refetch()
+      } catch (error) {
+        console.error('Delete error:', error)
+      }
     }
   }
-
-  const handleSelectRow = (index: number, checked: boolean) => {
-    const newSelected = new Set(selectedRows)
-    if (checked) {
-      newSelected.add(index)
+  
+  const handleRowClick = (row: T) => {
+    if (onRowClick) {
+      onRowClick(row)
     } else {
-      newSelected.delete(index)
+      openModal(entity, 'edit', row.id)
     }
-    setSelectedRows(newSelected)
   }
-
-  const isAllSelected = data.length > 0 && selectedRows.size === data.length
-  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < data.length
-
+  
+  const footerText = `Showing ${Math.min((page - 1) * pageSize + 1, total)} to ${Math.min(page * pageSize, total)} of ${total} entries`
+  
+  // Handle responsive columns
+  useEffect(() => {
+    const handleResize = () => {
+      // Update column visibility based on screen size
+      if (isMobile) {
+        const mobileVisibility: Record<string, boolean> = {}
+        enhancedColumns.forEach(col => {
+          const priority = (col.meta as any)?.priority || 3
+          mobileVisibility[col.id as string] = priority <= 1
+        })
+        table.setColumnVisibility(mobileVisibility)
+      }
+    }
+    
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isMobile, enhancedColumns, table])
+  
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-          )}
-        </div>
-        
-        {showActions && (
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onExportClick}>
-              <Download size={16} />
-              <span className="hidden sm:inline ml-2">Export</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={onImportClick}>
-              <Upload size={16} />
-              <span className="hidden sm:inline ml-2">Import</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={onTemplateClick}>
-              <FileText size={16} />
-              <span className="hidden sm:inline ml-2">Template</span>
-            </Button>
-            <Button onClick={onCreateClick} className="flex items-center gap-2">
-              <Plus size={16} />
-              <span className="hidden sm:inline">{createButtonText}</span>
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <MagnifyingGlass 
-            size={16} 
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" 
-          />
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Funnel size={16} />
-            <span className="ml-2">Filters</span>
-          </Button>
-          <Button variant="outline" size="sm">
-            <Columns size={16} />
-            <span className="ml-2">Columns</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Loading indicator */}
-      {loading && (
-        <div className="bg-primary/10 text-primary text-sm px-4 py-2 rounded-md">
-          Loading...
-        </div>
-      )}
-
-      {/* Error state */}
+    <ListChrome
+      title={title}
+      subtitle={subtitle}
+      icon={icon}
+      searchValue={q}
+      onSearchChange={handleSearchChange}
+      viewMode={viewMode}
+      onViewModeChange={handleViewModeChange}
+      showViewToggle={isMobile}
+      showCreate={showCreate}
+      onCreateClick={() => openModal(entity, 'create')}
+      onExportClick={() => exportMutation.mutate()}
+      onImportClick={() => {/* TODO: Implement import */}}
+      onTemplateClick={() => {/* TODO: Implement template download */}}
+      footerText={footerText}
+      className={className}
+    >
       {error && (
-        <div className="bg-destructive/10 text-destructive text-sm px-4 py-2 rounded-md flex items-center justify-between">
-          <span>{error}</span>
-          <Button variant="outline" size="sm">
-            Retry
-          </Button>
+        <div className="p-4 text-center text-destructive">
+          Error loading data. <Button variant="link" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-
-      {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={isAllSelected}
-                  indeterminate={isIndeterminate}
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
-              {columns.map((column) => (
-                <TableHead 
-                  key={String(column.key)}
-                  className={cn(
-                    "font-medium",
-                    column.sortable && "cursor-pointer hover:bg-muted/80 transition-colors",
-                    column.width && `w-[${column.width}]`
-                  )}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{column.label}</span>
-                    {column.sortable && sortColumn === column.key && (
-                      <span className="text-primary">
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
+      
+      {viewMode === 'cards' && isMobile ? (
+        <CardList 
+          data={data} 
+          isLoading={isLoading}
+          onItemClick={handleRowClick}
+        />
+      ) : (
+        <div className="relative overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-background z-20">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead 
+                      key={header.id}
+                      className={cn(
+                        "whitespace-nowrap",
+                        header.column.getCanSort() && "cursor-pointer select-none"
+                      )}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      <div className="flex items-center gap-2">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())
+                        }
+                        {header.column.getCanSort() && (
+                          <div className="flex flex-col">
+                            <ChevronUp 
+                              className={cn(
+                                "h-3 w-3",
+                                header.column.getIsSorted() === 'asc' ? 'text-foreground' : 'text-muted-foreground'
+                              )} 
+                            />
+                            <ChevronDown 
+                              className={cn(
+                                "h-3 w-3 -mt-1",
+                                header.column.getIsSorted() === 'desc' ? 'text-foreground' : 'text-muted-foreground'
+                              )} 
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              // Skeleton rows
-              Array.from({ length: pageSize }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="w-4 h-4 bg-muted rounded animate-pulse" />
-                  </TableCell>
-                  {columns.map((column) => (
-                    <TableCell key={String(column.key)}>
-                      <div className="h-4 bg-muted rounded animate-pulse" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length + 1} className="text-center py-8">
-                  <div className="text-muted-foreground">
-                    <div className="text-lg mb-2">No data found</div>
-                    <div className="text-sm">Try adjusting your search or filters</div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((record, index) => (
-                <TableRow 
-                  key={index}
-                  className={cn(
-                    "hover:bg-muted/50 transition-colors",
-                    selectedRows.has(index) && "bg-primary/5"
-                  )}
-                >
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedRows.has(index)}
-                      onCheckedChange={(checked) => handleSelectRow(index, checked as boolean)}
-                    />
-                  </TableCell>
-                  {columns.map((column) => (
-                    <TableCell key={String(column.key)}>
-                      {column.render ? 
-                        column.render(record[column.key], record) : 
-                        String(record[column.key] || '-')
-                      }
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <div>
-          Showing {totalCount > 0 ? startEntry : 0} to {endEntry} of {totalCount} entries
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange?.(currentPage - 1)}
-              disabled={currentPage <= 1}
-            >
-              <ChevronLeft size={16} />
-            </Button>
-            
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum: number
-                if (totalPages <= 5) {
-                  pageNum = i + 1
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i
-                } else {
-                  pageNum = currentPage - 2 + i
-                }
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onPageChange?.(pageNum)}
-                    className="w-8 h-8 p-0"
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: pageSize }).map((_, index) => (
+                  <TableRow key={index}>
+                    {enhancedColumns.map((col, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <div className="h-8 bg-muted rounded animate-pulse" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(row.original)}
                   >
-                    {pageNum}
-                  </Button>
-                )
-              })}
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange?.(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
-              <ChevronRight size={16} />
-            </Button>
-          </div>
-        )}
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={enhancedColumns.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+      
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-4 py-2 border-t">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(1, page - 1))}
+            disabled={page <= 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.min(Math.ceil(total / pageSize), page + 1))}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </Button>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Page {page} of {Math.ceil(total / pageSize)}
+        </div>
       </div>
-    </div>
+    </ListChrome>
   )
 }

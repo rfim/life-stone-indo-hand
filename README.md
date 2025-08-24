@@ -1,221 +1,212 @@
-# Life Stone Indonesia - ERP Admin System
+# Life Stone Indonesia ERP Admin
 
-A comprehensive ERP administration system for Life Stone Indonesia with a production-ready, 3-state hideable sidebar and complete navigation structure.
+A comprehensive ERP administration system for Life Stone Indonesia, built with React, TypeScript, and GitHub Spark's KV store.
 
-## Sidebar States & Shortcuts
+## Features
 
-### Three Sidebar States
+### ✅ Implemented
+- **Hideable 3-State Sidebar**: Expanded, collapsed, and hidden states with persistence
+- **Responsive Design**: Mobile-first with drawer navigation and full-screen forms
+- **Database-Driven**: No mock data - all operations use GitHub Spark KV store
+- **Master Data Management**: 
+  - Categories (full CRUD)
+  - Suppliers (full CRUD with contact management)
+  - Products (full CRUD with pricing, dimensions, and product variants)
+- **Advanced Table Features**: Server-side pagination, sorting, filtering, column management
+- **Modal Forms**: URL-driven pop-ups with validation and real-time feedback
+- **Lookup Selects**: Dynamic dropdowns populated from database
+- **Audit Trails**: Automatic tracking of created/updated timestamps and users
+- **Data Seeding**: Automatic population of reference data for development
 
-1. **Expanded** (default): Full sidebar with text labels and icons (264px width)
-2. **Collapsed**: Icons only with tooltips (72px width)
-3. **Hidden**: Completely hidden (0px width)
-
-### Keyboard Shortcuts
-
-- **Ctrl/Cmd + B**: Cycle through states (expanded → collapsed → hidden → expanded)
-- **[**: Collapse sidebar (when not hidden)
-- **]**: Expand sidebar (when not hidden)
-
-### Controls
-
-- **Hamburger button**: Toggle between hidden ↔ expanded (desktop), open mobile drawer
-- **Chevron button**: Toggle between expanded ↔ collapsed (when visible)
-- **Kebab menu (⋮)**: Additional options including "Hide sidebar"
-- **Show sidebar pill**: Appears when hidden, click to expand
-
-### Persistence
-
-All sidebar state is automatically saved to localStorage:
-- `ls.sidebar.state`: Current state ("expanded", "collapsed", "hidden")
-- `ls.sidebar.width`: Custom width (220px - 320px, default 264px)
-- `ls.sidebar.group.<GroupName>`: Per-group collapse state (true/false)
-
-State syncs across browser tabs and persists between sessions.
-
-### Mobile Behavior
-
-On screens < 1024px:
-- Sidebar becomes a drawer overlay
-- Hamburger button opens/closes drawer
-- Includes focus trap and ESC key support
-- Body scroll is locked when drawer is open
-
-## List Template Contract
-
-Every list page follows a consistent structure:
-
-### Header Section
-- **Left**: Page icon + title + subtitle
-- **Right**: Action buttons (Export, Import, Template, +Create)
-
-### Controls Section
-- **Left**: Search input with icon
-- **Right**: Filters and Columns buttons
-
-### Table Section
-- Consistent card container with rounded borders
-- Sticky header for long lists
-- Server-side pagination, sorting, and filtering
-- Column show/hide functionality
-- Row selection with checkboxes
-- Loading states with skeleton rows
-- Error handling with retry button
-
-### Footer Section
-- "Showing X to Y of N entries" text
-
-### URL State Management
-All list state is preserved in URL parameters:
-- `page`: Current page number
-- `pageSize`: Items per page
-- `q`: Search query
-- `sortBy`: Sort column
-- `sortDir`: Sort direction ("asc" or "desc")
-- `filters`: JSON object of active filters
-- `columns`: Array of visible column IDs
-
-### Event Handling
-Lists automatically remeasure when sidebar state changes via `sidebar:changed` event.
-
-## How to Add a Module
-
-### 1. Add to Navigation Config
-
-Edit `src/lib/nav-config.ts` and add your new module to the appropriate group:
-
-```typescript
-{
-  group: "Your Group",
-  children: [
-    { label: "Your Module", path: "/your-group/your-module", icon: YourIcon }
-  ]
-}
-```
-
-### 2. Component Structure
-
-The route will automatically be created and use the `ListPage` component template. For custom pages, create:
-
-```typescript
-// src/components/pages/your-module-page.tsx
-import { ListPage } from '@/components/list-page'
-
-export function YourModulePage() {
-  return <ListPage path="/your-group/your-module" />
-}
-```
-
-### 3. Custom List Components
-
-For specialized list behavior, extend the `ListPage` component:
-
-```typescript
-import { ListPage } from '@/components/list-page'
-
-export function CustomListPage({ path }: { path: string }) {
-  // Custom logic here
-  
-  return (
-    <ListPage 
-      path={path}
-      customActions={<YourCustomActions />}
-      customFilters={<YourCustomFilters />}
-    />
-  )
-}
-```
-
-### 4. Icons
-
-Choose appropriate icons from `lucide-react` that match the semantic meaning of your module:
-
-- `Package`: Items, products
-- `Users`: Customers, suppliers, employees
-- `Truck`: Vehicles, delivery
-- `Receipt`: Invoices, orders
-- `BarChart`: Reports, analytics
-- `Cog`: Settings, configuration
+### 🚧 In Progress
+- Additional master data entities (Items, Warehouses, Vehicles, etc.)
+- Import/Export functionality
+- Purchasing module
+- Warehouse management
+- Marketing and sales modules
+- Financial management
+- Dashboard and reporting
 
 ## Architecture
 
-### State Management
-- Sidebar state: Custom hook (`useSidebarState`)
-- Global state: React Query for server state
-- Local state: React useState for UI state
-- Persistence: localStorage for user preferences
+### Frontend Stack
+- **React 19** with TypeScript
+- **React Router** for navigation
+- **React Query** for server state management
+- **React Hook Form** with Zod validation
+- **Tailwind CSS** for styling
+- **shadcn/ui** components
+- **TanStack Table** for data tables
+- **Framer Motion** for animations
 
-### Routing
-- React Router v6 with declarative routes
-- Deep linking support for modals and filters
-- Automatic route generation from navigation config
+### Backend/Database
+- **GitHub Spark KV Store** as primary database
+- **Client-side data processing** with pagination, filtering, and sorting
+- **Optimistic updates** with real-time feedback
 
-### Styling
-- Tailwind CSS with custom design system
-- CSS variables for theming
-- shadcn/ui component library
-- Responsive design with mobile-first approach
+### Mobile Responsiveness
+- **Mobile-first design** with progressive enhancement
+- **Touch-friendly interfaces** with proper hit targets
+- **Drawer navigation** on mobile devices
+- **Full-screen forms** on small screens
+- **Cards view** as alternative to tables on mobile
 
-### Events
-- Custom events for cross-component communication
-- `sidebar:changed`: Fired when sidebar state changes
-- ResizeObserver for table remeasurement
+## Sidebar States & Shortcuts
 
-## Development
+The sidebar supports three states:
 
-### Project Structure
+1. **Expanded** (default): Shows icons and text labels
+2. **Collapsed**: Shows only icons with tooltips
+3. **Hidden**: Completely hidden, maximizing content area
+
+### Keyboard Shortcuts
+- `Ctrl/Cmd + B` - Cycle through sidebar states
+- `[` - Collapse sidebar
+- `]` - Expand sidebar
+
+### Mobile Behavior
+- Sidebar appears as a drawer overlay
+- Hamburger menu toggles drawer
+- Swipe gestures supported
+- Focus trapping for accessibility
+
+## Data Flow & API
+
+### No-Mock Policy
+All data operations use real API calls to GitHub Spark KV store:
+- Lists are fetched with server-side pagination
+- Create/Edit operations provide immediate feedback
+- Delete operations use soft delete (isDeleted flag)
+- All operations include audit logging
+
+### API Structure
+```typescript
+// Standard REST endpoints for each entity
+GET    /entity?page=&pageSize=&q=&sortBy=&sortDir=&filters={}
+GET    /entity/:id
+POST   /entity
+PATCH  /entity/:id  
+DELETE /entity/:id
 ```
-src/
-├── components/
-│   ├── layout/           # Layout components
-│   ├── sidebar/          # Sidebar components  
-│   ├── ui/              # shadcn/ui components
-│   └── list-page.tsx    # Reusable list template
-├── hooks/               # Custom React hooks
-├── lib/                 # Utilities and configs
-│   ├── nav-config.ts    # Navigation structure
-│   └── utils.ts         # Helper functions
-└── App.tsx             # Main application
+
+### Entity Services
+Each entity has a complete service layer with:
+- Type-safe API operations
+- Validation with Zod schemas
+- React Query integration
+- Error handling with field-level validation
+
+## How to Add a New Entity
+
+1. **Define the interface** in `src/lib/api/[module].ts`
+2. **Create validation schema** using Zod
+3. **Create entity service** using `createEntityService`
+4. **Create React hooks** using `createEntityHooks`
+5. **Define table columns** with responsive priorities
+6. **Create form component** with proper validation
+7. **Create page component** combining DataTable and CrudModal
+8. **Add route** to AppRouter component
+
+### Example Entity Creation
+
+```typescript
+// 1. Interface
+interface MyEntity extends BaseEntity {
+  name: string
+  code: string
+  isActive: boolean
+}
+
+// 2. Validation
+const myEntitySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  code: z.string().min(1, 'Code is required'),
+  isActive: z.boolean().default(true)
+})
+
+// 3. Service
+const myEntityService = createEntityService<MyEntity>('my-entity', ['name', 'code'])
+
+// 4. Hooks
+const useMyEntityApi = () => createEntityHooks('my-entity', myEntityService)
+
+// 5. Page component with table and forms
+// (See existing pages for implementation examples)
 ```
 
-### Key Components
-- `AppLayout`: CSS Grid layout with sidebar variable
-- `Sidebar`: Main navigation with 3-state behavior
-- `Header`: Top bar with sidebar controls
-- `ListPage`: Reusable list page template
-- `AppRouter`: Route generation and management
+## Environment Setup
 
-### Performance Considerations
-- Lazy loading for large data sets
-- Virtual scrolling for tables with 1000+ rows
-- Debounced search inputs
-- Optimistic updates for common actions
-- ResizeObserver for efficient table remeasurement
-
-## Testing
-
-### E2E Tests
-Key scenarios covered:
-- Sidebar state transitions
-- Keyboard shortcuts
-- Mobile drawer behavior
-- State persistence across page refreshes
-- Navigation between modules
-- Table interactions
-
-### Running Tests
+### Development
 ```bash
-npm run test:e2e
+npm install
+npm run dev
 ```
-
-## Deployment
 
 ### Build
 ```bash
 npm run build
+npm run preview
 ```
 
-### Environment Variables
-- `VITE_API_BASE_URL`: Backend API base URL
-- `VITE_APP_NAME`: Application name override
+## Key Components
 
-The system is designed to be production-ready with proper error boundaries, loading states, and accessibility support.
+### DataTable
+- Server-side pagination and sorting
+- Column filtering and visibility
+- Responsive design with card view fallback
+- Row selection and bulk operations
+- Real-time data updates
+
+### CrudModal
+- URL-driven modal state
+- Full-screen on mobile, side sheet on desktop
+- Form validation with real-time feedback
+- Audit trail display for view mode
+- Unsaved changes protection
+
+### LookupSelect
+- Dynamic population from database
+- Debounced search functionality
+- Caching with React Query
+- Specialized variants for common entities
+
+### ListChrome
+- Consistent header layout across all lists
+- Responsive action menus
+- Search and filter controls
+- Export/Import/Template buttons
+- Mobile FAB for create actions
+
+## Project Structure
+
+```
+src/
+├── components/           # Reusable UI components
+│   ├── forms/           # Form-related components
+│   ├── layout/          # Layout components
+│   ├── sidebar/         # Sidebar components
+│   ├── table/           # Table-related components
+│   └── ui/              # shadcn/ui components
+├── hooks/               # Custom React hooks
+├── lib/                 # Utilities and configurations
+│   ├── api/             # API services and types
+│   └── db/              # Database utilities
+├── pages/               # Page components by module
+│   ├── masters/         # Master data pages
+│   ├── purchasing/      # Purchasing pages
+│   └── ...              # Other modules
+└── styles/              # Global styles
+```
+
+## Contributing
+
+1. Follow the established patterns for new entities
+2. Ensure mobile responsiveness
+3. Include proper validation and error handling
+4. Maintain type safety throughout
+5. Test on multiple screen sizes
+6. Update documentation for new features
+
+## License
+
+Proprietary - Life Stone Indonesia
