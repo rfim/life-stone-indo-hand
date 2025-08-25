@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { NAV_TREE } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
+import lifestoneLogo from '@/assets/images/lifestone-logo.svg'
 
 interface MobileDrawerProps {
   open: boolean
@@ -271,9 +272,9 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
             <img 
-              src="/logo.svg" 
+              src={lifestoneLogo} 
               alt="Life Stone Indonesia" 
-              className="w-8 h-8 rounded"
+              className="w-8 h-8"
             />
             <div className="flex flex-col">
               <span className="font-semibold text-sm">Life Stone Indonesia</span>

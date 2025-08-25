@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import lifestoneLogo from '@/assets/images/lifestone-logo.svg'
 
 export function Sidebar() {
   const location = useLocation()
@@ -33,9 +34,9 @@ export function Sidebar() {
         isCollapsed && "justify-center px-2"
       )}>
         <img 
-          src="/logo.svg" 
+          src={lifestoneLogo} 
           alt="Life Stone Indonesia" 
-          className="w-8 h-8 rounded"
+          className="w-8 h-8"
         />
         {!isCollapsed && (
           <div className="flex flex-col">

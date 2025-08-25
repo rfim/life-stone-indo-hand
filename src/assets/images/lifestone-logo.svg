@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Life Stone Indonesia Logo - Red triangular LS design -->
+  <g>
+    <!-- Main triangular/angular "LS" letterform -->
+    <path d="M12 16L12 48L32 48L32 40L20 40L20 16L12 16Z" fill="#E53E3E"/>
+    <path d="M28 16L44 16L52 24L52 32L44 40L36 40L44 32L44 24L36 24L36 32L28 32L28 16Z" fill="#E53E3E"/>
+    <path d="M36 36L44 36L52 44L52 48L28 48L28 40L36 40L36 36Z" fill="#E53E3E"/>
+  </g>
+</svg>

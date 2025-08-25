@@ -11,6 +11,7 @@ import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { MobileDrawer } from './mobile-drawer'
+import lifestoneLogo from '@/assets/images/lifestone-logo.svg'
 
 export function Header() {
   const { 
@@ -114,9 +115,9 @@ export function Header() {
             {isMobile && (
               <div className="flex items-center gap-2">
                 <img 
-                  src="/logo.svg" 
+                  src={lifestoneLogo} 
                   alt="Life Stone Indonesia" 
-                  className="w-6 h-6 rounded"
+                  className="w-6 h-6"
                 />
                 <span className="font-semibold text-sm">Life Stone</span>
               </div>
