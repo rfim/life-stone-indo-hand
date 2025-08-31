@@ -545,25 +545,25 @@ function SimpleDeliveryOrderForm({ deliveryOrder, onSave, onCancel, loading }: S
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
         </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Saving...' : 'Save'}
-        </Button>
+          <Label>DO Number</Label>
+          <div className="font-medium">{deliveryOrder.deliveryOrderNumber}</div>
+        </div>
+        <div>
+          <Label>Customer Name</Label>
+          <div className="font-medium">{deliveryOrder.customerName}</div>
+        </div>
       </div>
-    </form>
-  )
-}
 
-// Simple View Component
-interface SimpleDeliveryOrderViewProps {
-  deliveryOrder: DeliveryOrder
-  onClose: () => void
-  onVoid: (id: string, reason: string) => void
-  onPrint: (deliveryOrder: DeliveryOrder) => void
-}
-
-function SimpleDeliveryOrderView({ deliveryOrder, onClose, onVoid, onPrint }: SimpleDeliveryOrderViewProps) {
-  const getStatusBadge = (status: DeliveryOrder['status']) => {
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Status</Label>
+          <div>{getStatusBadge(deliveryOrder.status)}</div>
+        </div>
+        <div>
     const variants: Record<DeliveryOrder['status'], { variant: any; label: string; icon: React.ReactNode }> = {
       draft: { variant: 'secondary', label: 'Draft', icon: <Edit className="w-3 h-3" /> },
       released: { variant: 'default', label: 'Released', icon: <Truck className="w-3 h-3" /> },
