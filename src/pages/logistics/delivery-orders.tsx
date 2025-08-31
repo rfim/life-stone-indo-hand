@@ -33,16 +33,22 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { 
-  SimpleDeliveryOrder as DeliveryOrder, 
-  useSimpleDeliveryOrdersList as useDeliveryOrdersList,
-  useSimpleDeliveryOrder as useDeliveryOrder,
-  useSimpleCreateDeliveryOrder as useCreateDeliveryOrder,
-  useSimpleUpdateDeliveryOrder as useUpdateDeliveryOrder,
-  useSimpleDeleteDeliveryOrder as useDeleteDeliveryOrder,
-  simpleDeliveryOrderService as deliveryOrderService
-} from '@/lib/api/simple-delivery-orders'
+import { useKV } from '@github/spark/hooks'
 import { ColumnDef } from '@tanstack/react-table'
+
+// Simple delivery order interface
+interface DeliveryOrder {
+  id: string
+  deliveryOrderNumber: string
+  deliveryDate: Date
+  customerName: string
+  status: 'draft' | 'released' | 'invoiced' | 'closed' | 'cancelled'
+  totalQuantity: number
+  totalAmount: number
+  notes?: string
+  createdAt: Date
+  updatedAt: Date
+}
 
 export function DeliveryOrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -57,18 +63,24 @@ export function DeliveryOrdersPage() {
   const isEditOpen = modalType === 'delivery-orders.edit' && !!editId
   const isViewOpen = modalType === 'delivery-orders.view' && !!editId
 
-  // Data fetching
-  const { data: deliveryOrdersData, isLoading, error, refetch } = useDeliveryOrdersList()
+  // Data from KV store
+  const [deliveryOrders, setDeliveryOrders] = useKV('erp.delivery-orders', [] as DeliveryOrder[])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const { data: editData, isLoading: isLoadingEdit } = useDeliveryOrder(editId || '')
+  // Filter and paginate data
+  const filteredOrders = deliveryOrders.filter(order => 
+    order.deliveryOrderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  
+  const total = filteredOrders.length
+  const start = (currentPage - 1) * pageSize
+  const end = start + pageSize
+  const currentOrders = filteredOrders.slice(start, end)
 
-  // Mutations
-  const createMutation = useCreateDeliveryOrder()
-  const updateMutation = useUpdateDeliveryOrder()
-  const deleteMutation = useDeleteDeliveryOrder()
-
-  const deliveryOrders = deliveryOrdersData?.data || []
-  const total = deliveryOrdersData?.total || 0
+  // Find current order for editing/viewing
+  const currentOrder = editId ? deliveryOrders.find(order => order.id === editId) : undefined
 
   // Modal handlers
   const openCreate = () => {
@@ -246,19 +258,61 @@ export function DeliveryOrdersPage() {
     toast.info('Printing functionality will be implemented')
   }
 
-  const handleVoid = async (id: string, reason: string) => {
+  const handleCreate = async (data: Omit<DeliveryOrder, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      // Simple void - just update status for now
-      await deliveryOrderService.update(id, {
-        status: 'cancelled',
-        voidReason: reason,
-        voidedAt: new Date()
-      })
-      toast.success('Delivery Order voided successfully')
-      refetch()
+      setIsLoading(true)
+      const newOrder: DeliveryOrder = {
+        ...data,
+        id: `DO-${Date.now()}`,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      
+      setDeliveryOrders(current => [...current, newOrder])
+      toast.success('Delivery Order created successfully')
       closeModal()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to void delivery order')
+      toast.error('Failed to create delivery order')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdate = async (id: string, data: Partial<Omit<DeliveryOrder, 'id' | 'createdAt'>>) => {
+    try {
+      setIsLoading(true)
+      setDeliveryOrders(current => 
+        current.map(order => 
+          order.id === id 
+            ? { ...order, ...data, updatedAt: new Date() }
+            : order
+        )
+      )
+      toast.success('Delivery Order updated successfully')
+      closeModal()
+    } catch (error) {
+      toast.error('Failed to update delivery order')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVoid = async (id: string, reason: string) => {
+    try {
+      setIsLoading(true)
+      setDeliveryOrders(current => 
+        current.map(order => 
+          order.id === id 
+            ? { ...order, status: 'cancelled' as const, updatedAt: new Date() }
+            : order
+        )
+      )
+      toast.success('Delivery Order voided successfully')
+      closeModal()
+    } catch (error) {
+      toast.error('Failed to void delivery order')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -338,7 +392,7 @@ export function DeliveryOrdersPage() {
         <CardContent className="p-0">
           <DataTable
             columns={columns}
-            data={deliveryOrders}
+            data={currentOrders}
             loading={isLoading}
             pagination={{
               pageIndex: currentPage - 1,
@@ -370,34 +424,16 @@ export function DeliveryOrdersPage() {
           
           <div className="mt-6">
             <SimpleDeliveryOrderForm
-              deliveryOrder={editData}
+              deliveryOrder={currentOrder}
               onSave={(data) => {
                 if (isCreateOpen) {
-                  createMutation.mutate(data, {
-                    onSuccess: () => {
-                      toast.success('Delivery Order created successfully')
-                      refetch()
-                      closeModal()
-                    },
-                    onError: (error) => {
-                      toast.error(error instanceof Error ? error.message : 'Failed to create delivery order')
-                    }
-                  })
-                } else {
-                  updateMutation.mutate({ id: editId!, data }, {
-                    onSuccess: () => {
-                      toast.success('Delivery Order updated successfully')
-                      refetch()
-                      closeModal()
-                    },
-                    onError: (error) => {
-                      toast.error(error instanceof Error ? error.message : 'Failed to update delivery order')
-                    }
-                  })
+                  handleCreate(data)
+                } else if (editId) {
+                  handleUpdate(editId, data)
                 }
               }}
               onCancel={closeModal}
-              loading={createMutation.isPending || updateMutation.isPending}
+              loading={isLoading}
             />
           </div>
         </SheetContent>
@@ -413,9 +449,9 @@ export function DeliveryOrdersPage() {
             </DialogDescription>
           </DialogHeader>
           
-          {editData && (
+          {currentOrder && (
             <SimpleDeliveryOrderView 
-              deliveryOrder={editData} 
+              deliveryOrder={currentOrder} 
               onClose={closeModal}
               onVoid={handleVoid}
               onPrint={handlePrint}
@@ -527,6 +563,24 @@ interface SimpleDeliveryOrderViewProps {
 }
 
 function SimpleDeliveryOrderView({ deliveryOrder, onClose, onVoid, onPrint }: SimpleDeliveryOrderViewProps) {
+  const getStatusBadge = (status: DeliveryOrder['status']) => {
+    const variants: Record<DeliveryOrder['status'], { variant: any; label: string; icon: React.ReactNode }> = {
+      draft: { variant: 'secondary', label: 'Draft', icon: <Edit className="w-3 h-3" /> },
+      released: { variant: 'default', label: 'Released', icon: <Truck className="w-3 h-3" /> },
+      invoiced: { variant: 'success', label: 'Invoiced', icon: <CheckCircle className="w-3 h-3" /> },
+      closed: { variant: 'outline', label: 'Closed', icon: <CheckCircle className="w-3 h-3" /> },
+      cancelled: { variant: 'destructive', label: 'Cancelled', icon: <XCircle className="w-3 h-3" /> }
+    }
+    
+    const config = variants[status]
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        {config.icon}
+        {config.label}
+      </Badge>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
