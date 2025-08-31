@@ -20,7 +20,7 @@ import {
   Columns, 
   Download, 
   Upload, 
-  FileTemplate,
+  FileText,
   Eye,
   Edit,
   Trash2,
@@ -301,7 +301,7 @@ export function DeliveryOrdersPage() {
             Import
           </Button>
           <Button variant="outline" size="sm">
-            <FileTemplate className="w-4 h-4 mr-2" />
+            <FileText className="w-4 h-4 mr-2" />
             Template
           </Button>
           <Button onClick={openCreate}>
