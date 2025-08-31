@@ -38,7 +38,7 @@ interface DataTableProps<T extends BaseEntity> {
   subtitle?: string
   icon?: React.ComponentType<{ className?: string }>
   columns: ColumnDef<T>[]
-  useEntityHooks: () => {
+  useEntityHooks: {
     useList: (params: ListParams) => any
     useDelete: () => any
     useExport: () => any
@@ -98,7 +98,7 @@ export function DataTable<T extends BaseEntity>({
   const [rowSelection, setRowSelection] = useState({})
   
   // API hooks
-  const { useList, useDelete, useExport, useImport } = useEntityHooks()
+  const { useList, useDelete, useExport, useImport } = useEntityHooks
   
   // Fetch data
   const { data: result, isLoading, error, refetch } = useList({

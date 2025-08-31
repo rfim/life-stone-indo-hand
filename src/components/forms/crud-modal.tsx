@@ -23,7 +23,7 @@ interface CrudModalProps<T extends BaseEntity> {
   schema?: z.ZodSchema<any>
   onSuccess?: (data: T) => void
   children: React.ReactNode
-  useEntityHooks: () => {
+  useEntityHooks: {
     useGet: (id: string) => any
     useCreate: () => any
     useUpdate: () => any
@@ -46,7 +46,7 @@ export function CrudModal<T extends BaseEntity>({
   const [searchParams, setSearchParams] = useSearchParams()
   const isMobile = useIsMobile()
   
-  const { useGet, useCreate, useUpdate } = useEntityHooks()
+  const { useGet, useCreate, useUpdate } = useEntityHooks
   
   // Fetch data for edit/view modes
   const { data: entityData, isLoading: isLoadingData } = useGet(id || '')

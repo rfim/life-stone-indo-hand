@@ -38,7 +38,7 @@ import {
   DeliveryOrder, 
   DeliveryOrderLine, 
   SalesOrder,
-  deliveryOrderHooks,
+  useDeliveryOrdersApi,
   enhancedDeliveryOrderService,
   generateDeliveryOrderNumber
 } from '@/lib/api/delivery-orders'
@@ -51,6 +51,9 @@ export function DeliveryOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
+
+  // Get hooks from API
+  const deliveryOrderHooks = useDeliveryOrdersApi()
 
   // Modal states
   const modalType = searchParams.get('modal')

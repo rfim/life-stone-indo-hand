@@ -500,10 +500,15 @@ export async function seedDatabase() {
   }
 }
 
-// Auto-seed on app start in development
-if (typeof window !== 'undefined' && import.meta.env.DEV) {
-  // Run seed after a short delay to ensure app is initialized
-  setTimeout(() => {
-    seedDatabase().catch(console.error)
-  }, 2000)
-}
+// Auto-seed on app start in development - DISABLED for debugging
+// if (typeof window !== 'undefined' && import.meta.env.DEV) {
+//   // Run seed after a longer delay to ensure app is fully initialized
+//   setTimeout(() => {
+//     // Only seed if we're in a proper React context
+//     try {
+//       seedDatabase().catch(console.error)
+//     } catch (error) {
+//       console.error('Error during seeding:', error)
+//     }
+//   }, 5000) // Increased delay
+// }

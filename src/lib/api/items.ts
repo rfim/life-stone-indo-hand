@@ -288,7 +288,7 @@ export const productPriceHistoryService = createEntityService<ProductPriceHistor
 export const productImagesService = createEntityService<ProductImage>('product-images', ['productId', 'fileName'])
 
 // Hooks
-export const useItemsApi = () => createEntityHooks('items', itemsService)
-export const useProductsApi = () => createEntityHooks('products', productsService)
-export const useProductPriceHistoryApi = () => createEntityHooks('product-price-history', productPriceHistoryService)
-export const useProductImagesApi = () => createEntityHooks('product-images', productImagesService)
+export const useItemsApi = createEntityHooks('items', itemsService)
+export const useProductsApi = createEntityHooks('products', productsService)
+export const useProductPriceHistoryApi = createEntityHooks('product-price-history', productPriceHistoryService)
+export const useProductImagesApi = createEntityHooks('product-images', productImagesService)

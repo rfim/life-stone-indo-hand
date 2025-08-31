@@ -374,7 +374,7 @@ export const enhancedDeliveryOrderService = {
 }
 
 // Create React Query hooks
-export const deliveryOrderHooks = createEntityHooks('delivery-orders', enhancedDeliveryOrderService)
+export const useDeliveryOrdersApi = createEntityHooks('delivery-orders', enhancedDeliveryOrderService)
 
 // Additional hooks for related data
 export const useSalesOrders = () => {
