@@ -9,8 +9,8 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Toaster } from '@/components/ui/sonner'
 
-// Import seeding function
-import '@/lib/seed-data'
+// Import seeding function - temporarily disabled
+// import '@/lib/seed-data'
 
 // Create a client
 const queryClient = new QueryClient({

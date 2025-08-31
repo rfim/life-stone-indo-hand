@@ -1,5 +1,3 @@
-import { useKV } from '@github/spark/hooks'
-
 /**
  * Database connection and configuration for Life Stone Indonesia ERP
  * Using GitHub Spark's KV store as the primary database

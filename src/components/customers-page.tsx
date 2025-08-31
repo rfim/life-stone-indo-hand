@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil, Eye, Trash2 } from '@phosphor-icons/react'
-import { useKV } from '@github/spark/hooks'
 
 interface Customer {
   id: string
@@ -54,10 +53,27 @@ const sampleCustomers: Customer[] = [
 ]
 
 export function CustomersPage() {
-  const [customers, setCustomers] = useKV('customers', sampleCustomers)
+  const [customers, setCustomers] = useState<Customer[]>(sampleCustomers)
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Save to localStorage when customers change
+  useEffect(() => {
+    localStorage.setItem('customers', JSON.stringify(customers))
+  }, [customers])
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('customers')
+    if (stored) {
+      try {
+        setCustomers(JSON.parse(stored))
+      } catch (error) {
+        console.error('Error loading customers:', error)
+      }
+    }
+  }, [])
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

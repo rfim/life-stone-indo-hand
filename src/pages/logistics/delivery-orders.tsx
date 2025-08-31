@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,10 +8,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DataTable } from '@/components/data-table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { 
   Plus, 
   Search, 
@@ -22,7 +21,6 @@ import {
   FileText,
   Eye,
   Edit,
-  Trash2,
   Truck,
   Package,
   Calendar,
@@ -33,8 +31,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { useKV } from '@github/spark/hooks'
-import { ColumnDef } from '@tanstack/react-table'
 
 // Simple delivery order interface
 interface DeliveryOrder {
@@ -63,10 +59,66 @@ export function DeliveryOrdersPage() {
   const isEditOpen = modalType === 'delivery-orders.edit' && !!editId
   const isViewOpen = modalType === 'delivery-orders.view' && !!editId
 
-  // Data from KV store
-  const [deliveryOrders, setDeliveryOrders] = useKV('erp.delivery-orders', [] as DeliveryOrder[])
+  // Data from localStorage as fallback
+  const [deliveryOrders, setDeliveryOrders] = useState<DeliveryOrder[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('erp.delivery-orders')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setDeliveryOrders(parsed.map((order: any) => ({
+          ...order,
+          deliveryDate: new Date(order.deliveryDate),
+          createdAt: new Date(order.createdAt),
+          updatedAt: new Date(order.updatedAt)
+        })))
+      } else {
+        // Add some sample data for testing
+        const sampleData: DeliveryOrder[] = [
+          {
+            id: 'DO-001',
+            deliveryOrderNumber: 'DO/2024/01/0001',
+            deliveryDate: new Date(),
+            customerName: 'PT. Sample Customer',
+            status: 'draft',
+            totalQuantity: 5,
+            totalAmount: 500000,
+            notes: 'Sample delivery order',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          {
+            id: 'DO-002',
+            deliveryOrderNumber: 'DO/2024/01/0002',
+            deliveryDate: new Date(),
+            customerName: 'PT. Another Customer',
+            status: 'released',
+            totalQuantity: 10,
+            totalAmount: 1000000,
+            notes: 'Another sample delivery order',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        ]
+        setDeliveryOrders(sampleData)
+      }
+    } catch (err) {
+      console.error('Error loading delivery orders:', err)
+    }
+  }, [])
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('erp.delivery-orders', JSON.stringify(deliveryOrders))
+    } catch (err) {
+      console.error('Error saving delivery orders:', err)
+    }
+  }, [deliveryOrders])
 
   // Filter and paginate data
   const filteredOrders = deliveryOrders.filter(order => 
@@ -123,7 +175,7 @@ export function DeliveryOrdersPage() {
     const variants: Record<DeliveryOrder['status'], { variant: any; label: string; icon: React.ReactNode }> = {
       draft: { variant: 'secondary', label: 'Draft', icon: <Edit className="w-3 h-3" /> },
       released: { variant: 'default', label: 'Released', icon: <Truck className="w-3 h-3" /> },
-      invoiced: { variant: 'success', label: 'Invoiced', icon: <CheckCircle className="w-3 h-3" /> },
+      invoiced: { variant: 'default', label: 'Invoiced', icon: <CheckCircle className="w-3 h-3" /> },
       closed: { variant: 'outline', label: 'Closed', icon: <CheckCircle className="w-3 h-3" /> },
       cancelled: { variant: 'destructive', label: 'Cancelled', icon: <XCircle className="w-3 h-3" /> }
     }
@@ -142,110 +194,6 @@ export function DeliveryOrdersPage() {
     // For the simple version, just return a placeholder
     return deliveryOrder.status === 'closed' ? 100 : deliveryOrder.status === 'draft' ? 0 : 50
   }
-
-  // Table columns
-  const columns: ColumnDef<DeliveryOrder>[] = [
-    {
-      accessorKey: 'deliveryOrderNumber',
-      header: 'DO Number',
-      cell: ({ row }) => (
-        <div className="font-medium">
-          {row.getValue('deliveryOrderNumber')}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'deliveryDate',
-      header: 'Delivery Date',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-muted-foreground" />
-          {format(new Date(row.getValue('deliveryDate')), 'dd MMM yyyy')}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'customerName',
-      header: 'Customer',
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium">{row.getValue('customerName')}</div>
-          <div className="text-sm text-muted-foreground">
-            Simple DO
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'totalQuantity',
-      header: 'Total Qty',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-muted-foreground" />
-          <span className="font-medium">{row.getValue('totalQuantity')}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
-    },
-    {
-      header: 'Progress',
-      cell: ({ row }) => {
-        const progress = getDeliveryProgress(row.original)
-        return (
-          <div className="w-24">
-            <Progress value={progress} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1">{progress}%</div>
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'totalAmount',
-      header: 'Total Amount',
-      cell: ({ row }) => (
-        <div className="font-medium">
-          {new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR'
-          }).format(row.getValue('totalAmount'))}
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      header: '',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openView(row.original.id)}
-          >
-            <Eye className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openEdit(row.original.id)}
-            disabled={row.original.status === 'invoiced' || row.original.status === 'closed'}
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handlePrint(row.original)}
-          >
-            <Printer className="w-4 h-4" />
-          </Button>
-        </div>
-      ),
-    },
-  ]
 
   // Handlers
   const handleSearch = (value: string) => {
@@ -387,23 +335,135 @@ export function DeliveryOrdersPage() {
         </CardContent>
       </Card>
 
-      {/* Data Table */}
+      {/* Simple Table */}
       <Card>
         <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={currentOrders}
-            loading={isLoading}
-            pagination={{
-              pageIndex: currentPage - 1,
-              pageSize,
-              pageCount: Math.ceil(total / pageSize),
-              total,
-              onPageChange: setCurrentPage,
-              onPageSizeChange: setPageSize,
-            }}
-            onRowClick={(row) => openView(row.id)}
-          />
+          <div className="relative overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>DO Number</TableHead>
+                  <TableHead>Delivery Date</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Total Qty</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Total Amount</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      {Array.from({ length: 8 }).map((_, colIndex) => (
+                        <TableCell key={colIndex}>
+                          <div className="h-8 bg-muted rounded animate-pulse" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : currentOrders.length > 0 ? (
+                  currentOrders.map((order) => (
+                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openView(order.id)}>
+                      <TableCell className="font-medium">{order.deliveryOrderNumber}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          {format(new Date(order.deliveryDate), 'dd MMM yyyy')}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{order.customerName}</div>
+                          <div className="text-sm text-muted-foreground">Delivery Order</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">{order.totalQuantity}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>
+                        <div className="w-24">
+                          <Progress value={getDeliveryProgress(order)} className="h-2" />
+                          <div className="text-xs text-muted-foreground mt-1">{getDeliveryProgress(order)}%</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {new Intl.NumberFormat('id-ID', {
+                          style: 'currency',
+                          currency: 'IDR'
+                        }).format(order.totalAmount)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); openView(order.id); }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); openEdit(order.id); }}
+                            disabled={order.status === 'invoiced' || order.status === 'closed'}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); handlePrint(order); }}
+                          >
+                            <Printer className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                      No delivery orders found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Pagination */}
+          <div className="flex items-center justify-between p-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              Showing {Math.min((currentPage - 1) * pageSize + 1, total)} to {Math.min(currentPage * pageSize, total)} of {total} entries
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage <= 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {Math.ceil(total / pageSize)}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(Math.ceil(total / pageSize), currentPage + 1))}
+                disabled={currentPage >= Math.ceil(total / pageSize)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -545,29 +605,33 @@ function SimpleDeliveryOrderForm({ deliveryOrder, onSave, onCancel, loading }: S
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
         </Button>
-          <Label>DO Number</Label>
-          <div className="font-medium">{deliveryOrder.deliveryOrderNumber}</div>
-        </div>
-        <div>
-          <Label>Customer Name</Label>
-          <div className="font-medium">{deliveryOrder.customerName}</div>
-        </div>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving...' : 'Save & Close'}
+        </Button>
       </div>
+    </form>
+  )
+}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Status</Label>
-          <div>{getStatusBadge(deliveryOrder.status)}</div>
-        </div>
-        <div>
+// Simple View Component
+interface SimpleDeliveryOrderViewProps {
+  deliveryOrder: DeliveryOrder
+  onClose: () => void
+  onVoid: (id: string, reason: string) => void
+  onPrint: (deliveryOrder: DeliveryOrder) => void
+}
+
+function SimpleDeliveryOrderView({ deliveryOrder, onClose, onVoid, onPrint }: SimpleDeliveryOrderViewProps) {
+  // Status badge renderer (duplicated here for scope)
+  const getStatusBadge = (status: DeliveryOrder['status']) => {
     const variants: Record<DeliveryOrder['status'], { variant: any; label: string; icon: React.ReactNode }> = {
       draft: { variant: 'secondary', label: 'Draft', icon: <Edit className="w-3 h-3" /> },
       released: { variant: 'default', label: 'Released', icon: <Truck className="w-3 h-3" /> },
-      invoiced: { variant: 'success', label: 'Invoiced', icon: <CheckCircle className="w-3 h-3" /> },
+      invoiced: { variant: 'default', label: 'Invoiced', icon: <CheckCircle className="w-3 h-3" /> },
       closed: { variant: 'outline', label: 'Closed', icon: <CheckCircle className="w-3 h-3" /> },
       cancelled: { variant: 'destructive', label: 'Cancelled', icon: <XCircle className="w-3 h-3" /> }
     }
@@ -633,3 +697,6 @@ function SimpleDeliveryOrderForm({ deliveryOrder, onSave, onCancel, loading }: S
     </div>
   )
 }
+
+export default DeliveryOrdersPage
+export { DeliveryOrdersPage }

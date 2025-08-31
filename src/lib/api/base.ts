@@ -1,4 +1,4 @@
-import { useKV } from '@github/spark/hooks'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   BaseEntity, 
@@ -36,6 +36,24 @@ export function createEntityService<T extends BaseEntity>(
 
   const list = async (params: ListParams = {}): Promise<ListResponse<T>> => {
     try {
+      // Check if spark is available
+      if (typeof window === 'undefined' || !window.spark || !window.spark.kv) {
+        // Fallback to localStorage
+        const localData = localStorage.getItem(storageKey)
+        const allData: T[] = localData ? JSON.parse(localData) : []
+        
+        // Apply filters and search
+        let filtered = applyFilters(allData, params, searchFields)
+        
+        // Apply sorting
+        filtered = applySorting(filtered, params.sortBy, params.sortDir)
+        
+        // Apply pagination
+        const result = applyPagination(filtered, params.page, params.pageSize || DEFAULT_PAGE_SIZE)
+        
+        return result
+      }
+      
       const allData: T[] = await spark.kv.get(storageKey) || []
       
       // Apply filters and search
@@ -56,6 +74,15 @@ export function createEntityService<T extends BaseEntity>(
 
   const get = async (id: string): Promise<T | null> => {
     try {
+      // Check if spark is available
+      if (typeof window === 'undefined' || !window.spark || !window.spark.kv) {
+        // Fallback to localStorage
+        const localData = localStorage.getItem(storageKey)
+        const allData: T[] = localData ? JSON.parse(localData) : []
+        const item = allData.find(item => item.id === id && !item.isDeleted)
+        return item || null
+      }
+      
       const allData: T[] = await spark.kv.get(storageKey) || []
       const item = allData.find(item => item.id === id && !item.isDeleted)
       return item || null
@@ -81,6 +108,16 @@ export function createEntityService<T extends BaseEntity>(
         id,
         ...createTimestamps()
       } as T
+
+      // Check if spark is available
+      if (typeof window === 'undefined' || !window.spark || !window.spark.kv) {
+        // Fallback to localStorage
+        const localData = localStorage.getItem(storageKey)
+        const allData: T[] = localData ? JSON.parse(localData) : []
+        allData.push(newItem)
+        localStorage.setItem(storageKey, JSON.stringify(allData))
+        return { id, data: newItem }
+      }
 
       const allData: T[] = await spark.kv.get(storageKey) || []
       allData.push(newItem)
