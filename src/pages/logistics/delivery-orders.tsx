@@ -12,7 +12,6 @@ import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DataTable } from '@/components/data-table'
-import { LookupSelect } from '@/components/lookup-select'
 import { 
   Plus, 
   Search, 
@@ -35,15 +34,14 @@ import {
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { 
-  DeliveryOrder, 
-  DeliveryOrderLine, 
-  SalesOrder,
-  useDeliveryOrdersApi,
-  enhancedDeliveryOrderService,
-  generateDeliveryOrderNumber
-} from '@/lib/api/delivery-orders'
-import { DeliveryOrderForm } from '@/components/forms/delivery-order-form'
-import { DeliveryOrderView } from '@/components/forms/delivery-order-view'
+  SimpleDeliveryOrder as DeliveryOrder, 
+  useSimpleDeliveryOrdersList as useDeliveryOrdersList,
+  useSimpleDeliveryOrder as useDeliveryOrder,
+  useSimpleCreateDeliveryOrder as useCreateDeliveryOrder,
+  useSimpleUpdateDeliveryOrder as useUpdateDeliveryOrder,
+  useSimpleDeleteDeliveryOrder as useDeleteDeliveryOrder,
+  simpleDeliveryOrderService as deliveryOrderService
+} from '@/lib/api/simple-delivery-orders'
 import { ColumnDef } from '@tanstack/react-table'
 
 export function DeliveryOrdersPage() {
@@ -51,9 +49,6 @@ export function DeliveryOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
-
-  // Get hooks from API
-  const deliveryOrderHooks = useDeliveryOrdersApi
 
   // Modal states
   const modalType = searchParams.get('modal')
@@ -63,18 +58,14 @@ export function DeliveryOrdersPage() {
   const isViewOpen = modalType === 'delivery-orders.view' && !!editId
 
   // Data fetching
-  const { data: deliveryOrdersData, isLoading, error, refetch } = deliveryOrderHooks.useList({
-    page: currentPage,
-    pageSize,
-    q: searchQuery
-  })
+  const { data: deliveryOrdersData, isLoading, error, refetch } = useDeliveryOrdersList()
 
-  const { data: editData, isLoading: isLoadingEdit } = deliveryOrderHooks.useGet(editId || '') // Remove the enabled option that's causing issues
+  const { data: editData, isLoading: isLoadingEdit } = useDeliveryOrder(editId || '')
 
   // Mutations
-  const createMutation = deliveryOrderHooks.useCreate()
-  const updateMutation = deliveryOrderHooks.useUpdate()
-  const deleteMutation = deliveryOrderHooks.useDelete()
+  const createMutation = useCreateDeliveryOrder()
+  const updateMutation = useUpdateDeliveryOrder()
+  const deleteMutation = useDeleteDeliveryOrder()
 
   const deliveryOrders = deliveryOrdersData?.data || []
   const total = deliveryOrdersData?.total || 0
@@ -134,14 +125,10 @@ export function DeliveryOrdersPage() {
     )
   }
 
-  // Progress calculator for delivery completion
-  const getDeliveryProgress = (lines: DeliveryOrderLine[]) => {
-    if (lines.length === 0) return 0
-    
-    const totalOrdered = lines.reduce((sum, line) => sum + line.orderedQuantity, 0)
-    const totalDelivered = lines.reduce((sum, line) => sum + line.alreadyDeliveredQuantity + line.quantityToDeliver, 0)
-    
-    return totalOrdered > 0 ? Math.round((totalDelivered / totalOrdered) * 100) : 0
+  // Progress calculator for delivery completion (simplified for now)
+  const getDeliveryProgress = (deliveryOrder: DeliveryOrder) => {
+    // For the simple version, just return a placeholder
+    return deliveryOrder.status === 'closed' ? 100 : deliveryOrder.status === 'draft' ? 0 : 50
   }
 
   // Table columns
@@ -172,7 +159,7 @@ export function DeliveryOrdersPage() {
         <div>
           <div className="font-medium">{row.getValue('customerName')}</div>
           <div className="text-sm text-muted-foreground">
-            SO: {row.original.salesOrderId}
+            Simple DO
           </div>
         </div>
       ),
@@ -195,7 +182,7 @@ export function DeliveryOrdersPage() {
     {
       header: 'Progress',
       cell: ({ row }) => {
-        const progress = getDeliveryProgress(row.original.lines)
+        const progress = getDeliveryProgress(row.original)
         return (
           <div className="w-24">
             <Progress value={progress} className="h-2" />
@@ -261,7 +248,12 @@ export function DeliveryOrdersPage() {
 
   const handleVoid = async (id: string, reason: string) => {
     try {
-      await enhancedDeliveryOrderService.voidDeliveryOrder(id, reason)
+      // Simple void - just update status for now
+      await deliveryOrderService.update(id, {
+        status: 'cancelled',
+        voidReason: reason,
+        voidedAt: new Date()
+      })
       toast.success('Delivery Order voided successfully')
       refetch()
       closeModal()
@@ -377,17 +369,19 @@ export function DeliveryOrdersPage() {
           </SheetHeader>
           
           <div className="mt-6">
-            <DeliveryOrderFormPlaceholder
+            <SimpleDeliveryOrderForm
               deliveryOrder={editData}
               onSave={(data) => {
                 if (isCreateOpen) {
-                  // Use the enhanced service for creating with stock mutations
-                  enhancedDeliveryOrderService.createWithStockMutation(data).then((result) => {
-                    toast.success('Delivery Order created successfully')
-                    refetch()
-                    closeModal()
-                  }).catch((error) => {
-                    toast.error(error instanceof Error ? error.message : 'Failed to create delivery order')
+                  createMutation.mutate(data, {
+                    onSuccess: () => {
+                      toast.success('Delivery Order created successfully')
+                      refetch()
+                      closeModal()
+                    },
+                    onError: (error) => {
+                      toast.error(error instanceof Error ? error.message : 'Failed to create delivery order')
+                    }
                   })
                 } else {
                   updateMutation.mutate({ id: editId!, data }, {
@@ -420,7 +414,7 @@ export function DeliveryOrdersPage() {
           </DialogHeader>
           
           {editData && (
-            <DeliveryOrderViewPlaceholder 
+            <SimpleDeliveryOrderView 
               deliveryOrder={editData} 
               onClose={closeModal}
               onVoid={handleVoid}
@@ -433,26 +427,155 @@ export function DeliveryOrdersPage() {
   )
 }
 
-// Form Component (to be implemented separately)
-interface DeliveryOrderFormProps {
+// Simple Form Component
+interface SimpleDeliveryOrderFormProps {
   deliveryOrder?: DeliveryOrder
   onSave: (data: any) => void
   onCancel: () => void
   loading: boolean
 }
 
-function DeliveryOrderFormPlaceholder({ deliveryOrder, onSave, onCancel, loading }: DeliveryOrderFormProps) {
-  return <DeliveryOrderForm deliveryOrder={deliveryOrder} onSave={onSave} onCancel={onCancel} loading={loading} />
+function SimpleDeliveryOrderForm({ deliveryOrder, onSave, onCancel, loading }: SimpleDeliveryOrderFormProps) {
+  const [formData, setFormData] = React.useState({
+    deliveryOrderNumber: deliveryOrder?.deliveryOrderNumber || `DO/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`,
+    deliveryDate: deliveryOrder?.deliveryDate || new Date(),
+    customerName: deliveryOrder?.customerName || '',
+    status: deliveryOrder?.status || 'draft' as const,
+    totalQuantity: deliveryOrder?.totalQuantity || 1,
+    totalAmount: deliveryOrder?.totalAmount || 100000,
+    notes: deliveryOrder?.notes || ''
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave(formData)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="deliveryOrderNumber">DO Number</Label>
+          <Input
+            id="deliveryOrderNumber"
+            value={formData.deliveryOrderNumber}
+            onChange={(e) => setFormData(prev => ({ ...prev, deliveryOrderNumber: e.target.value }))}
+            disabled={!!deliveryOrder}
+          />
+        </div>
+        <div>
+          <Label htmlFor="customerName">Customer Name</Label>
+          <Input
+            id="customerName"
+            value={formData.customerName}
+            onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+            required
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="totalQuantity">Total Quantity</Label>
+          <Input
+            id="totalQuantity"
+            type="number"
+            value={formData.totalQuantity}
+            onChange={(e) => setFormData(prev => ({ ...prev, totalQuantity: Number(e.target.value) }))}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="totalAmount">Total Amount</Label>
+          <Input
+            id="totalAmount"
+            type="number"
+            value={formData.totalAmount}
+            onChange={(e) => setFormData(prev => ({ ...prev, totalAmount: Number(e.target.value) }))}
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="notes">Notes</Label>
+        <Textarea
+          id="notes"
+          value={formData.notes}
+          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
+    </form>
+  )
 }
 
-// View Component (to be implemented separately)
-interface DeliveryOrderViewProps {
+// Simple View Component
+interface SimpleDeliveryOrderViewProps {
   deliveryOrder: DeliveryOrder
   onClose: () => void
   onVoid: (id: string, reason: string) => void
   onPrint: (deliveryOrder: DeliveryOrder) => void
 }
 
-function DeliveryOrderViewPlaceholder({ deliveryOrder, onClose, onVoid, onPrint }: DeliveryOrderViewProps) {
-  return <DeliveryOrderView deliveryOrder={deliveryOrder} onClose={onClose} onVoid={onVoid} onPrint={onPrint} />
+function SimpleDeliveryOrderView({ deliveryOrder, onClose, onVoid, onPrint }: SimpleDeliveryOrderViewProps) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>DO Number</Label>
+          <div className="font-medium">{deliveryOrder.deliveryOrderNumber}</div>
+        </div>
+        <div>
+          <Label>Customer Name</Label>
+          <div className="font-medium">{deliveryOrder.customerName}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Status</Label>
+          <div>{getStatusBadge(deliveryOrder.status)}</div>
+        </div>
+        <div>
+          <Label>Total Amount</Label>
+          <div className="font-medium">
+            {new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR'
+            }).format(deliveryOrder.totalAmount)}
+          </div>
+        </div>
+      </div>
+
+      {deliveryOrder.notes && (
+        <div>
+          <Label>Notes</Label>
+          <div>{deliveryOrder.notes}</div>
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => onPrint(deliveryOrder)}>
+          <Printer className="w-4 h-4 mr-2" />
+          Print
+        </Button>
+        {deliveryOrder.status === 'draft' && (
+          <Button variant="destructive" onClick={() => onVoid(deliveryOrder.id, 'Manual void')}>
+            <XCircle className="w-4 h-4 mr-2" />
+            Void
+          </Button>
+        )}
+        <Button onClick={onClose}>Close</Button>
+      </div>
+    </div>
+  )
 }

@@ -10,7 +10,7 @@ import {
   warehousesService
 } from '@/lib/api/masters'
 import { itemsService } from '@/lib/api/items'
-import { enhancedDeliveryOrderService } from '@/lib/api/delivery-orders'
+import { deliveryOrderService } from '@/lib/api/delivery-orders'
 
 export async function seedDatabase() {
   console.log('🌱 Starting database seeding...')
