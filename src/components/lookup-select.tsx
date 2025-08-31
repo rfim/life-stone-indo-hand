@@ -63,7 +63,19 @@ const entityServices = {
   'items': itemsService,
 } as const
 
-type EntityName = keyof typeof entityServices
+// Custom fetch functions for entities stored directly in KV
+const kvEntityFetchers = {
+  'expeditions': async () => {
+    const data = await spark.kv.get('erp.expeditions') || []
+    return { data: data.filter((item: any) => !item.isDeleted), total: data.length }
+  },
+  'products': async () => {
+    const data = await spark.kv.get('erp.products') || []
+    return { data: data.filter((item: any) => !item.isDeleted), total: data.length }
+  },
+}
+
+type EntityName = keyof typeof entityServices | keyof typeof kvEntityFetchers
 
 interface LookupSelectProps {
   entity: EntityName
@@ -96,14 +108,22 @@ export function LookupSelect({
 }: LookupSelectProps) {
   const [searchQuery, setSearchQuery] = useState('')
   
-  const service = entityServices[entity]
+  const service = entityServices[entity as keyof typeof entityServices]
+  const kvFetcher = kvEntityFetchers[entity as keyof typeof kvEntityFetchers]
   
   const { data: result, isLoading, error: fetchError } = useQuery({
     queryKey: [entity, 'lookup', searchQuery],
-    queryFn: () => service.list({ 
-      q: searchQuery || undefined,
-      pageSize: 100 // Get more items for lookups
-    }),
+    queryFn: async () => {
+      if (kvFetcher) {
+        return await kvFetcher()
+      } else if (service) {
+        return await service.list({ 
+          q: searchQuery || undefined,
+          pageSize: 100 // Get more items for lookups
+        })
+      }
+      return { data: [], total: 0 }
+    },
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
   })

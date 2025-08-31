@@ -10,6 +10,7 @@ import {
   warehousesService
 } from '@/lib/api/masters'
 import { itemsService } from '@/lib/api/items'
+import { enhancedDeliveryOrderService } from '@/lib/api/delivery-orders'
 
 export async function seedDatabase() {
   console.log('🌱 Starting database seeding...')
@@ -255,6 +256,239 @@ export async function seedDatabase() {
       console.log('📦 Seeding items...')
       for (const item of items) {
         await itemsService.create({ ...item, isActive: true })
+      }
+    }
+
+    // Seed Expeditions (for delivery orders)
+    const expeditions = [
+      {
+        name: 'JNE Express',
+        code: 'JNE001',
+        contactPerson: 'Budi Santoso',
+        phone: '+62 21 1500-888',
+        email: 'cs@jne.co.id',
+        address: 'Jl. Tomang Raya No. 11, Jakarta Barat',
+        status: 'active'
+      },
+      {
+        name: 'TIKI Logistics',
+        code: 'TIKI002',
+        contactPerson: 'Siti Rahayu',
+        phone: '+62 21 1500-125',
+        email: 'cs@tiki.id',
+        address: 'Jl. Daan Mogot Km. 11, Jakarta Barat',
+        status: 'active'
+      },
+      {
+        name: 'SiCepat Express',
+        code: 'SICEPAT003',
+        contactPerson: 'Ahmad Yani',
+        phone: '+62 21 500-900',
+        email: 'cs@sicepat.com',
+        address: 'Jl. Raya Serpong, Tangerang Selatan',
+        status: 'active'
+      }
+    ]
+
+    console.log('🚚 Seeding expeditions...')
+    for (const expedition of expeditions) {
+      await spark.kv.set('erp.expeditions', [...(await spark.kv.get('erp.expeditions') || []), {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...expedition,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false
+      }])
+    }
+
+    // Seed Products (for sales orders and delivery orders)
+    const products = [
+      {
+        code: 'MAR-CWM-001',
+        name: 'Carrara White Marble Slab',
+        description: 'Premium Carrara white marble slab 2cm thickness',
+        unitOfMeasure: 'sqm',
+        category: 'Natural Stone',
+        status: 'active'
+      },
+      {
+        code: 'GRN-ABS-002',
+        name: 'Absolute Black Granite',
+        description: 'Pure black granite from India, premium quality',
+        unitOfMeasure: 'sqm',
+        category: 'Natural Stone',
+        status: 'active'
+      },
+      {
+        code: 'CER-WOD-003',
+        name: 'Wood Look Ceramic Tile',
+        description: '60x120cm wood look ceramic tile',
+        unitOfMeasure: 'sqm',
+        category: 'Ceramic',
+        status: 'active'
+      }
+    ]
+
+    console.log('🪨 Seeding products...')
+    for (const product of products) {
+      await spark.kv.set('erp.products', [...(await spark.kv.get('erp.products') || []), {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...product,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false
+      }])
+    }
+
+    // Seed Customers (for sales orders)
+    const customers = [
+      {
+        name: 'PT. Konstruksi Utama',
+        code: 'CUS001',
+        type: 'Contractor',
+        contactPerson: 'Ir. Bambang Sutrisno',
+        phone: '+62 21 5555-1234',
+        email: 'bambang@konstruksiutama.co.id',
+        address: 'Jl. Sudirman No. 123, Jakarta Pusat',
+        status: 'active'
+      },
+      {
+        name: 'CV. Interior Design Plus',
+        code: 'CUS002',
+        type: 'Retail Customer',
+        contactPerson: 'Maya Sari',
+        phone: '+62 21 8888-5678',
+        email: 'maya@interiorplus.com',
+        address: 'Jl. Kemang Raya No. 45, Jakarta Selatan',
+        status: 'active'
+      },
+      {
+        name: 'Toko Bangunan Sentosa',
+        code: 'CUS003',
+        type: 'Distributor',
+        contactPerson: 'Hendra Wijaya',
+        phone: '+62 21 7777-9876',
+        email: 'hendra@sentosabangunan.com',
+        address: 'Jl. Raya Bekasi No. 789, Bekasi',
+        status: 'active'
+      }
+    ]
+
+    console.log('👥 Seeding customers...')
+    for (const customer of customers) {
+      await spark.kv.set('erp.customers', [...(await spark.kv.get('erp.customers') || []), {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...customer,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false
+      }])
+    }
+
+    // Get seeded data for sales orders
+    const productsList = await spark.kv.get('erp.products') || []
+    const customersList = await spark.kv.get('erp.customers') || []
+
+    if (productsList.length > 0 && customersList.length > 0) {
+      // Seed Sales Orders (for delivery orders to reference)
+      const salesOrders = [
+        {
+          salesOrderNumber: 'SO/2024/01/001',
+          customerId: customersList[0].id,
+          customerName: customersList[0].name,
+          status: 'approved',
+          orderDate: new Date('2024-01-15'),
+          deliveryDate: new Date('2024-02-15'),
+          lines: [
+            {
+              id: `line-${Date.now()}-1`,
+              productId: productsList[0].id,
+              productCode: productsList[0].code,
+              productName: productsList[0].name,
+              quantity: 100,
+              deliveredQuantity: 0,
+              remainingQuantity: 100,
+              unitOfMeasure: productsList[0].unitOfMeasure,
+              pricePerUnit: 850000,
+              totalAmount: 85000000
+            },
+            {
+              id: `line-${Date.now()}-2`,
+              productId: productsList[1].id,
+              productCode: productsList[1].code,
+              productName: productsList[1].name,
+              quantity: 50,
+              deliveredQuantity: 0,
+              remainingQuantity: 50,
+              unitOfMeasure: productsList[1].unitOfMeasure,
+              pricePerUnit: 1200000,
+              totalAmount: 60000000
+            }
+          ],
+          totalAmount: 145000000
+        },
+        {
+          salesOrderNumber: 'SO/2024/01/002',
+          customerId: customersList[1].id,
+          customerName: customersList[1].name,
+          status: 'active',
+          orderDate: new Date('2024-01-20'),
+          deliveryDate: new Date('2024-02-20'),
+          lines: [
+            {
+              id: `line-${Date.now()}-3`,
+              productId: productsList[2].id,
+              productCode: productsList[2].code,
+              productName: productsList[2].name,
+              quantity: 200,
+              deliveredQuantity: 50,
+              remainingQuantity: 150,
+              unitOfMeasure: productsList[2].unitOfMeasure,
+              pricePerUnit: 450000,
+              totalAmount: 90000000
+            }
+          ],
+          totalAmount: 90000000
+        }
+      ]
+
+      console.log('📋 Seeding sales orders...')
+      for (const salesOrder of salesOrders) {
+        await spark.kv.set('erp.sales-orders', [...(await spark.kv.get('erp.sales-orders') || []), {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          ...salesOrder,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false
+        }])
+      }
+
+      // Seed Stock Cards (initial inventory)
+      const stockCards = []
+      const warehousesList = await warehousesService.list({ pageSize: 100 })
+      const defaultWarehouse = warehousesList.data[0]
+
+      if (defaultWarehouse) {
+        for (const product of productsList) {
+          stockCards.push({
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            productId: product.id,
+            warehouseId: defaultWarehouse.id,
+            transactionType: 'in',
+            transactionDate: new Date('2024-01-01'),
+            referenceType: 'adjustment',
+            referenceId: 'initial-stock',
+            quantity: 500, // Initial stock
+            balance: 500,
+            notes: 'Initial stock setup',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isDeleted: false
+          })
+        }
+
+        console.log('📊 Seeding stock cards...')
+        await spark.kv.set('erp.stock-cards', stockCards)
       }
     }
 
