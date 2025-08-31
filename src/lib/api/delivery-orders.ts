@@ -191,13 +191,18 @@ export const useDeliveryOrdersApi = deliveryOrderHooks
 // Additional hooks for related data
 export const useSalesOrders = () => {
   return {
-    getAvailable: async () => enhancedDeliveryOrderService.getAvailableSalesOrders()
+    getAvailable: async () => {
+      // TODO: Implement getAvailableSalesOrders
+      return []
+    }
   }
 }
 
 export const useStockAvailability = () => {
   return {
-    check: async (productId: string, warehouseId: string) => 
-      enhancedDeliveryOrderService.getStockAvailability(productId, warehouseId)
+    check: async (productId: string, warehouseId: string) => {
+      // TODO: Implement getStockAvailability
+      return { available: 100 }
+    }
   }
 }

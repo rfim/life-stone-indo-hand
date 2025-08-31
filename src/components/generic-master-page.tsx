@@ -156,7 +156,7 @@ function GenericForm() {
 
 // Mock service hooks - replace with actual API calls
 const useMockEntityHooks = (entity: string) => {
-  return () => ({
+  return {
     useList: () => ({
       data: { data: [], total: 0 },
       isLoading: false,
@@ -185,7 +185,7 @@ const useMockEntityHooks = (entity: string) => {
     useImport: () => ({
       mutate: () => {}
     })
-  })
+  }
 }
 
 interface GenericPageProps {

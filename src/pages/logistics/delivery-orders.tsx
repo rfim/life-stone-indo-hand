@@ -532,7 +532,7 @@ interface SimpleDeliveryOrderFormProps {
 }
 
 function SimpleDeliveryOrderForm({ deliveryOrder, onSave, onCancel, loading }: SimpleDeliveryOrderFormProps) {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     deliveryOrderNumber: deliveryOrder?.deliveryOrderNumber || `DO/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`,
     deliveryDate: deliveryOrder?.deliveryDate || new Date(),
     customerName: deliveryOrder?.customerName || '',
