@@ -53,7 +53,7 @@ export function DeliveryOrdersPage() {
   const [pageSize, setPageSize] = useState(25)
 
   // Get hooks from API
-  const deliveryOrderHooks = useDeliveryOrdersApi()
+  const deliveryOrderHooks = useDeliveryOrdersApi
 
   // Modal states
   const modalType = searchParams.get('modal')
