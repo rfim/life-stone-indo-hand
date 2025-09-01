@@ -8,6 +8,7 @@ import { DashboardOverview } from '@/components/dashboard-overview'
 import { CategoriesPage } from '@/pages/masters/categories'
 import { SuppliersPage } from '@/pages/masters/suppliers'
 import { ProductsPage } from '@/pages/masters/products'
+import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -23,6 +24,8 @@ export function AppRouter() {
         return <SuppliersPage />
       case '/masters/products':
         return <ProductsPage />
+      case '/logistics/delivery-orders':
+        return <DeliveryOrdersPage />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
