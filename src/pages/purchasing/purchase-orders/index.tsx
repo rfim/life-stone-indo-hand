@@ -89,7 +89,8 @@ export function PurchaseOrdersPage() {
       setRows(data)
       setTotal(data.length)
     } catch (error) {
-      toast.error('Failed to load purchase orders')
+      console.error('Failed to load purchase orders:', error)
+      toast.error('Failed to load purchase orders. Please try refreshing the page.')
     } finally {
       setIsLoading(false)
     }

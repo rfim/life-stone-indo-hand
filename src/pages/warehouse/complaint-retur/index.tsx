@@ -71,7 +71,8 @@ export function ComplaintReturPage() {
       setRows(data)
       setTotal(data.length)
     } catch (error) {
-      toast.error('Failed to load complaint/returns')
+      console.error('Failed to load complaint/returns:', error)
+      toast.error('Failed to load complaint/returns. Please try refreshing the page.')
     } finally {
       setIsLoading(false)
     }

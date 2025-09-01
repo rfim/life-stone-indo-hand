@@ -71,7 +71,8 @@ export function ReceiveItemsPage() {
       setRows(data)
       setTotal(data.length)
     } catch (error) {
-      toast.error('Failed to load receive items')
+      console.error('Failed to load receive items:', error)
+      toast.error('Failed to load receive items. Please try refreshing the page.')
     } finally {
       setIsLoading(false)
     }

@@ -65,6 +65,7 @@ export function PurchaseInvoicesPage() {
       setRows(data)
       setTotal(data.length)
     } catch (error) {
+      console.error('Failed to load purchase invoices:', error)
       toast.error('Failed to load purchase invoices')
     } finally {
       setIsLoading(false)
@@ -93,10 +94,6 @@ export function PurchaseInvoicesPage() {
     setEditingId(id)
     setIsSheetOpen(true)
   }
-
-  useEffect(() => {
-    loadData()
-  }, [])
 
   const generateQRCode = (invoiceNumber: string) => {
     // In real app, this would generate actual QR code

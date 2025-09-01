@@ -6,72 +6,106 @@ export interface CrudAdapter<T extends { id: string }> {
   get(id: string): Promise<T>;
   create(payload: Omit<T, 'id'|'createdAt'|'updatedAt'>): Promise<string>;
   update(id: string, patch: Partial<T>): Promise<void>;
+  getAll(): Promise<T[]>;
 }
 
 export class LocalStorageAdapter<T extends BaseMaster> implements CrudAdapter<T> {
   constructor(private storageKey: string) {}
 
   async list(params: { q?: string; page: number; pageSize: number; }): Promise<{ data: T[]; total: number }> {
-    const items = loadFromStorage<T>(this.storageKey);
-    
-    // Filter by search query
-    let filteredItems = items;
-    if (params.q) {
-      filteredItems = items.filter(item => 
-        searchInText(item.code, params.q!) || 
-        searchInText(item.name, params.q!)
-      );
+    try {
+      const items = loadFromStorage<T>(this.storageKey);
+      
+      // Filter by search query
+      let filteredItems = items;
+      if (params.q) {
+        filteredItems = items.filter(item => 
+          searchInText(item.code, params.q!) || 
+          searchInText(item.name, params.q!)
+        );
+      }
+      
+      // Sort by updated date (newest first)
+      filteredItems.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      
+      // Paginate
+      return paginate(filteredItems, params.page, params.pageSize);
+    } catch (error) {
+      console.error(`Failed to list data from ${this.storageKey}:`, error);
+      // Return empty result as fallback
+      return { data: [], total: 0 };
     }
-    
-    // Sort by updated date (newest first)
-    filteredItems.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    
-    // Paginate
-    return paginate(filteredItems, params.page, params.pageSize);
+  }
+
+  async getAll(): Promise<T[]> {
+    try {
+      const items = loadFromStorage<T>(this.storageKey);
+      // Sort by updated date (newest first)
+      return items.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } catch (error) {
+      console.error(`Failed to get all data from ${this.storageKey}:`, error);
+      // Return empty array as fallback
+      return [];
+    }
   }
 
   async get(id: string): Promise<T> {
-    const items = loadFromStorage<T>(this.storageKey);
-    const item = items.find(i => i.id === id);
-    if (!item) {
-      throw new Error(`Item with id ${id} not found`);
+    try {
+      const items = loadFromStorage<T>(this.storageKey);
+      const item = items.find(i => i.id === id);
+      if (!item) {
+        throw new Error(`Item with id ${id} not found`);
+      }
+      return item;
+    } catch (error) {
+      console.error(`Failed to get item ${id} from ${this.storageKey}:`, error);
+      throw error;
     }
-    return item;
   }
 
   async create(payload: Omit<T, 'id'|'createdAt'|'updatedAt'>): Promise<string> {
-    const items = loadFromStorage<T>(this.storageKey);
-    const now = nowISO();
-    const id = generateId();
-    
-    const newItem = {
-      ...payload,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    } as T;
-    
-    items.push(newItem);
-    saveToStorage(this.storageKey, items);
-    
-    return id;
+    try {
+      const items = loadFromStorage<T>(this.storageKey);
+      const now = nowISO();
+      const id = generateId();
+      
+      const newItem = {
+        ...payload,
+        id,
+        createdAt: now,
+        updatedAt: now,
+      } as T;
+      
+      items.push(newItem);
+      saveToStorage(this.storageKey, items);
+      
+      return id;
+    } catch (error) {
+      console.error(`Failed to create item in ${this.storageKey}:`, error);
+      throw new Error('Failed to save data. Please try again.');
+    }
   }
 
   async update(id: string, patch: Partial<T>): Promise<void> {
-    const items = loadFromStorage<T>(this.storageKey);
-    const index = items.findIndex(i => i.id === id);
-    
-    if (index === -1) {
-      throw new Error(`Item with id ${id} not found`);
+    try {
+      const items = loadFromStorage<T>(this.storageKey);
+      const index = items.findIndex(i => i.id === id);
+      
+      if (index === -1) {
+        throw new Error(`Item with id ${id} not found`);
+      }
+      
+      items[index] = {
+        ...items[index],
+        ...patch,
+        updatedAt: nowISO(),
+      };
+      
+      saveToStorage(this.storageKey, items);
+    } catch (error) {
+      console.error(`Failed to update item ${id} in ${this.storageKey}:`, error);
+      throw new Error('Failed to update data. Please try again.');
     }
-    
-    items[index] = {
-      ...items[index],
-      ...patch,
-      updatedAt: nowISO(),
-    };
-    
-    saveToStorage(this.storageKey, items);
   }
 }
 
