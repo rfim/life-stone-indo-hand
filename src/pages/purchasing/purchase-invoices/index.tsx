@@ -43,6 +43,10 @@ const adapter = makeLocalStorageAdapter<PurchaseInvoice>('erp.purchasing.invoice
 export function PurchaseInvoicesPage() {
   const [searchParams] = useSearchParams()
   const [rows, setRows] = useState<PurchaseInvoice[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -55,12 +59,39 @@ export function PurchaseInvoicesPage() {
   }, [searchParams])
 
   const loadData = async () => {
+    setIsLoading(true)
     try {
       const data = await adapter.getAll()
       setRows(data)
+      setTotal(data.length)
     } catch (error) {
       toast.error('Failed to load purchase invoices')
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setPage(1)
+  }
+
+  const handleCreate = () => {
+    setEditingId(null)
+    setIsSheetOpen(true)
+  }
+
+  const handleEdit = (id: string) => {
+    setEditingId(id)
+    setIsSheetOpen(true)
   }
 
   useEffect(() => {
@@ -194,6 +225,7 @@ export function PurchaseInvoicesPage() {
 
   // Custom columns for purchase invoices
   const columns = [
+    ...getDefaultColumns<PurchaseInvoice>(),
     {
       key: 'invoiceNumber',
       header: 'Invoice #',
@@ -297,29 +329,20 @@ export function PurchaseInvoicesPage() {
   ]
 
   return (
-    <div className="container mx-auto p-4">
+    <>
       <MasterList
         title="Purchase Invoices"
-        data={rows}
-        columns={[...getDefaultColumns<PurchaseInvoice>(), ...columns]}
-        onEdit={(row) => {
-          setEditingId(row.id)
-          setIsSheetOpen(true)
-        }}
-        onDelete={async (id) => {
-          try {
-            await adapter.delete(id)
-            toast.success('Purchase invoice deleted')
-            loadData()
-          } catch (error) {
-            toast.error('Failed to delete purchase invoice')
-          }
-        }}
-        onCreate={() => {
-          setEditingId(null)
-          setIsSheetOpen(true)
-        }}
-        additionalActions={additionalActions}
+        rows={rows}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        searchQuery={searchQuery}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        columns={columns}
+        isLoading={isLoading}
       />
 
       <MasterForm
@@ -338,6 +361,6 @@ export function PurchaseInvoicesPage() {
           />
         )}
       </MasterForm>
-    </div>
+    </>
   )
 }

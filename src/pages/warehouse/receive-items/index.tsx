@@ -49,6 +49,10 @@ const adapter = makeLocalStorageAdapter<ReceiveItems>('erp.warehouse.receive-ite
 export function ReceiveItemsPage() {
   const [searchParams] = useSearchParams()
   const [rows, setRows] = useState<ReceiveItems[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -61,17 +65,40 @@ export function ReceiveItemsPage() {
   }, [searchParams])
 
   const loadData = async () => {
+    setIsLoading(true)
     try {
       const data = await adapter.getAll()
       setRows(data)
+      setTotal(data.length)
     } catch (error) {
       toast.error('Failed to load receive items')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   useEffect(() => {
     loadData()
   }, [])
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setPage(1)
+  }
+
+  const handleCreate = () => {
+    setEditingId(null)
+    setIsSheetOpen(true)
+  }
+
+  const handleEdit = (id: string) => {
+    setEditingId(id)
+    setIsSheetOpen(true)
+  }
 
   const generateQRCode = (receiptNumber: string) => {
     // In real app, this would generate actual QR code
@@ -171,6 +198,7 @@ export function ReceiveItemsPage() {
 
   // Custom columns for receive items
   const columns = [
+    ...getDefaultColumns<ReceiveItems>(),
     {
       key: 'receiptNumber',
       header: 'Receipt #',
@@ -275,29 +303,20 @@ export function ReceiveItemsPage() {
   ]
 
   return (
-    <div className="container mx-auto p-4">
+    <>
       <MasterList
         title="Receive Items"
-        data={rows}
-        columns={[...getDefaultColumns<ReceiveItems>(), ...columns]}
-        onEdit={(row) => {
-          setEditingId(row.id)
-          setIsSheetOpen(true)
-        }}
-        onDelete={async (id) => {
-          try {
-            await adapter.delete(id)
-            toast.success('Receive items deleted')
-            loadData()
-          } catch (error) {
-            toast.error('Failed to delete receive items')
-          }
-        }}
-        onCreate={() => {
-          setEditingId(null)
-          setIsSheetOpen(true)
-        }}
-        additionalActions={additionalActions}
+        rows={rows}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        searchQuery={searchQuery}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        columns={columns}
+        isLoading={isLoading}
       />
 
       <MasterForm
@@ -316,6 +335,6 @@ export function ReceiveItemsPage() {
           />
         )}
       </MasterForm>
-    </div>
+    </>
   )
 }

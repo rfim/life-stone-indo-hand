@@ -49,6 +49,10 @@ const adapter = makeLocalStorageAdapter<ComplaintRetur>('erp.warehouse.complaint
 export function ComplaintReturPage() {
   const [searchParams] = useSearchParams()
   const [rows, setRows] = useState<ComplaintRetur[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -61,17 +65,40 @@ export function ComplaintReturPage() {
   }, [searchParams])
 
   const loadData = async () => {
+    setIsLoading(true)
     try {
       const data = await adapter.getAll()
       setRows(data)
+      setTotal(data.length)
     } catch (error) {
       toast.error('Failed to load complaint/returns')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   useEffect(() => {
     loadData()
   }, [])
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setPage(1)
+  }
+
+  const handleCreate = () => {
+    setEditingId(null)
+    setIsSheetOpen(true)
+  }
+
+  const handleEdit = (id: string) => {
+    setEditingId(id)
+    setIsSheetOpen(true)
+  }
 
   const generateQRCode = (complaintNumber: string) => {
     // In real app, this would generate actual QR code
@@ -215,6 +242,7 @@ export function ComplaintReturPage() {
 
   // Custom columns for complaint/returns
   const columns = [
+    ...getDefaultColumns<ComplaintRetur>(),
     {
       key: 'complaintNumber',
       header: 'Number',
@@ -336,29 +364,20 @@ export function ComplaintReturPage() {
   ]
 
   return (
-    <div className="container mx-auto p-4">
+    <>
       <MasterList
         title="Complaint / Purchase Return"
-        data={rows}
-        columns={[...getDefaultColumns<ComplaintRetur>(), ...columns]}
-        onEdit={(row) => {
-          setEditingId(row.id)
-          setIsSheetOpen(true)
-        }}
-        onDelete={async (id) => {
-          try {
-            await adapter.delete(id)
-            toast.success('Complaint/return deleted')
-            loadData()
-          } catch (error) {
-            toast.error('Failed to delete complaint/return')
-          }
-        }}
-        onCreate={() => {
-          setEditingId(null)
-          setIsSheetOpen(true)
-        }}
-        additionalActions={additionalActions}
+        rows={rows}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        searchQuery={searchQuery}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        columns={columns}
+        isLoading={isLoading}
       />
 
       <MasterForm
@@ -377,6 +396,6 @@ export function ComplaintReturPage() {
           />
         )}
       </MasterForm>
-    </div>
+    </>
   )
 }
