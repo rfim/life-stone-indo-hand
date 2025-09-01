@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Refine } from '@refinedev/core'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
@@ -78,7 +79,59 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AppContent />
+        <Refine
+          dataProvider={{
+            getList: async () => {
+              // Simple data provider that returns sample data
+              return {
+                data: [
+                  {
+                    id: 'DO-001',
+                    deliveryOrderNumber: 'DO/2024/01/0001',
+                    deliveryDate: new Date(),
+                    customerName: 'PT. Sample Customer',
+                    status: 'draft',
+                    totalQuantity: 5,
+                    totalAmount: 500000,
+                    notes: 'Sample delivery order',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  },
+                  {
+                    id: 'DO-002',
+                    deliveryOrderNumber: 'DO/2024/01/0002',
+                    deliveryDate: new Date(),
+                    customerName: 'PT. Another Customer',
+                    status: 'released',
+                    totalQuantity: 10,
+                    totalAmount: 1000000,
+                    notes: 'Another sample delivery order',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  }
+                ],
+                total: 2
+              }
+            },
+            getOne: async () => ({ data: {} }),
+            create: async () => ({ data: {} }),
+            update: async () => ({ data: {} }),
+            deleteOne: async () => ({ data: {} }),
+            getApiUrl: () => '',
+          }}
+          resources={[
+            {
+              name: "delivery-orders",
+              list: "/logistics/delivery-orders",
+            },
+          ]}
+          options={{
+            syncWithLocation: true,
+            warnWhenUnsavedChanges: true,
+          }}
+        >
+          <AppContent />
+        </Refine>
         <Toaster />
       </BrowserRouter>
     </QueryClientProvider>

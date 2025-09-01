@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useList } from '@refinedev/core'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,74 +60,29 @@ export function DeliveryOrdersPage() {
   const isEditOpen = modalType === 'delivery-orders.edit' && !!editId
   const isViewOpen = modalType === 'delivery-orders.view' && !!editId
 
-  // Data from localStorage as fallback
-  const [deliveryOrders, setDeliveryOrders] = useState<DeliveryOrder[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Use Refine's useList hook for data fetching
+  const { data, isLoading, isError, error } = useList({
+    resource: "delivery-orders",
+    pagination: { current: currentPage, pageSize: pageSize },
+    sorters: [{ field: "deliveryDate", order: "desc" }],
+  })
 
-  // Load data from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('erp.delivery-orders')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        setDeliveryOrders(parsed.map((order: any) => ({
-          ...order,
-          deliveryDate: new Date(order.deliveryDate),
-          createdAt: new Date(order.createdAt),
-          updatedAt: new Date(order.updatedAt)
-        })))
-      } else {
-        // Add some sample data for testing
-        const sampleData: DeliveryOrder[] = [
-          {
-            id: 'DO-001',
-            deliveryOrderNumber: 'DO/2024/01/0001',
-            deliveryDate: new Date(),
-            customerName: 'PT. Sample Customer',
-            status: 'draft',
-            totalQuantity: 5,
-            totalAmount: 500000,
-            notes: 'Sample delivery order',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: 'DO-002',
-            deliveryOrderNumber: 'DO/2024/01/0002',
-            deliveryDate: new Date(),
-            customerName: 'PT. Another Customer',
-            status: 'released',
-            totalQuantity: 10,
-            totalAmount: 1000000,
-            notes: 'Another sample delivery order',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
-        setDeliveryOrders(sampleData)
-      }
-    } catch (err) {
-      console.error('Error loading delivery orders:', err)
-    }
-  }, [])
+  // Handle loading state
+  if (isLoading) return <div>Loading…</div>
+  
+  // Handle error state
+  if (isError) return <div>Error: {String(error?.message ?? "Unknown")}</div>
 
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('erp.delivery-orders', JSON.stringify(deliveryOrders))
-    } catch (err) {
-      console.error('Error saving delivery orders:', err)
-    }
-  }, [deliveryOrders])
-
+  // Extract data from the response
+  const deliveryOrders = data?.data || []
+  
   // Filter and paginate data
   const filteredOrders = deliveryOrders.filter(order => 
     order.deliveryOrderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
   )
   
-  const total = filteredOrders.length
+  const filteredTotal = filteredOrders.length
   const start = (currentPage - 1) * pageSize
   const end = start + pageSize
   const currentOrders = filteredOrders.slice(start, end)
@@ -208,73 +164,32 @@ export function DeliveryOrdersPage() {
 
   const handleCreate = async (data: Omit<DeliveryOrder, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      setIsLoading(true)
-      const newOrder: DeliveryOrder = {
-        ...data,
-        id: `DO-${Date.now()}`,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-      
-      setDeliveryOrders(current => [...current, newOrder])
-      toast.success('Delivery Order created successfully')
+      // TODO: Implement create with Refine mutations
+      toast.info('Create functionality will be implemented with Refine mutations')
       closeModal()
     } catch (error) {
       toast.error('Failed to create delivery order')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleUpdate = async (id: string, data: Partial<Omit<DeliveryOrder, 'id' | 'createdAt'>>) => {
     try {
-      setIsLoading(true)
-      setDeliveryOrders(current => 
-        current.map(order => 
-          order.id === id 
-            ? { ...order, ...data, updatedAt: new Date() }
-            : order
-        )
-      )
-      toast.success('Delivery Order updated successfully')
+      // TODO: Implement update with Refine mutations
+      toast.info('Update functionality will be implemented with Refine mutations')
       closeModal()
     } catch (error) {
       toast.error('Failed to update delivery order')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleVoid = async (id: string, reason: string) => {
     try {
-      setIsLoading(true)
-      setDeliveryOrders(current => 
-        current.map(order => 
-          order.id === id 
-            ? { ...order, status: 'cancelled' as const, updatedAt: new Date() }
-            : order
-        )
-      )
-      toast.success('Delivery Order voided successfully')
+      // TODO: Implement void with Refine mutations
+      toast.info('Void functionality will be implemented with Refine mutations')
       closeModal()
     } catch (error) {
       toast.error('Failed to void delivery order')
-    } finally {
-      setIsLoading(false)
     }
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to load delivery orders. Please try again.
-          </AlertDescription>
-        </Alert>
-      </div>
-    )
   }
 
   return (
@@ -440,7 +355,7 @@ export function DeliveryOrdersPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between p-4 border-t">
             <div className="text-sm text-muted-foreground">
-              Showing {Math.min((currentPage - 1) * pageSize + 1, total)} to {Math.min(currentPage * pageSize, total)} of {total} entries
+              Showing {Math.min((currentPage - 1) * pageSize + 1, filteredTotal)} to {Math.min(currentPage * pageSize, filteredTotal)} of {filteredTotal} entries
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -452,13 +367,13 @@ export function DeliveryOrdersPage() {
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {Math.ceil(total / pageSize)}
+                Page {currentPage} of {Math.ceil(filteredTotal / pageSize)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(Math.min(Math.ceil(total / pageSize), currentPage + 1))}
-                disabled={currentPage >= Math.ceil(total / pageSize)}
+                onClick={() => setCurrentPage(Math.min(Math.ceil(filteredTotal / pageSize), currentPage + 1))}
+                disabled={currentPage >= Math.ceil(filteredTotal / pageSize)}
               >
                 Next
               </Button>
@@ -493,7 +408,7 @@ export function DeliveryOrdersPage() {
                 }
               }}
               onCancel={closeModal}
-              loading={isLoading}
+              loading={false} // Remove loading dependency since using Refine
             />
           </div>
         </SheetContent>
