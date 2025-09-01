@@ -203,6 +203,6 @@ export const useStockAvailability = () => {
     check: async (productId: string, warehouseId: string) => {
       // TODO: Implement getStockAvailability
       return { available: 100 }
+    }
   }
-  }
-}}
+}
