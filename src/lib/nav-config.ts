@@ -72,31 +72,32 @@ export interface NavGroup {
 
 export const NAV_TREE: NavGroup[] = [
   {
-    group: "Masters",
+    group: "Master Data",
     children: [
-      { label: "Items", path: "/masters/items", icon: Package },
-      { label: "Products", path: "/masters/products", icon: Grid },
-      { label: "Categories", path: "/masters/categories", icon: Layers },
-      { label: "Finishing types", path: "/masters/finishing-types", icon: Palette },
-      { label: "Material types", path: "/masters/material-types", icon: Boxes },
-      { label: "Sizes", path: "/masters/sizes", icon: Ruler },
-      { label: "Origins", path: "/masters/origins", icon: MapPin },
-      { label: "Currencies", path: "/masters/currencies", icon: Coins },
-      { label: "Promotions", path: "/masters/promotions", icon: Tag },
-      { label: "Suppliers", path: "/masters/suppliers", icon: Users },
-      { label: "Warehouses", path: "/masters/warehouses", icon: Warehouse },
-      { label: "Vehicles", path: "/masters/vehicles", icon: Truck },
-      { label: "Expeditions", path: "/masters/expeditions", icon: Ship },
-      { label: "Armadas", path: "/masters/armadas", icon: Crown },
-      { label: "Bank accounts", path: "/masters/bank-accounts", icon: CreditCard },
-      { label: "Vendors", path: "/masters/vendors", icon: UserCheck },
-      { label: "Accounts", path: "/masters/accounts", icon: FileText },
-      { label: "Account categories", path: "/masters/account-categories", icon: FolderTree },
-      { label: "Sub account categories", path: "/masters/sub-account-categories", icon: FolderOpen },
-      { label: "Departments", path: "/masters/departments", icon: Building },
-      { label: "Customer types", path: "/masters/customer-types", icon: UserSquare },
-      { label: "Projects", path: "/masters/projects", icon: FolderOpen },
-      { label: "Customers", path: "/masters/customers", icon: Users }
+      { label: "Master Data", path: "/master-data", icon: Grid },
+      { label: "Products", path: "/master-data/product", icon: Package },
+      { label: "Categories", path: "/master-data/category", icon: Layers },
+      { label: "Finishing Types", path: "/master-data/finishing", icon: Palette },
+      { label: "Material Types", path: "/master-data/material-type", icon: Boxes },
+      { label: "Sizes", path: "/master-data/size", icon: Ruler },
+      { label: "Origins", path: "/master-data/origin", icon: MapPin },
+      { label: "Currencies", path: "/master-data/currency", icon: Coins },
+      { label: "Promotions", path: "/master-data/promotion", icon: Tag },
+      { label: "Suppliers", path: "/master-data/supplier", icon: Users },
+      { label: "Warehouses", path: "/master-data/warehouse", icon: Warehouse },
+      { label: "Vehicles", path: "/master-data/vehicle", icon: Truck },
+      { label: "Expeditions", path: "/master-data/expedition", icon: Ship },
+      { label: "Armadas", path: "/master-data/armada", icon: Crown },
+      { label: "Bank Accounts", path: "/master-data/bank-account", icon: CreditCard },
+      { label: "Vendors", path: "/master-data/vendor", icon: UserCheck },
+      { label: "Accounts", path: "/master-data/account", icon: FileText },
+      { label: "Account Categories", path: "/master-data/account-category", icon: FolderTree },
+      { label: "Account Sub Categories", path: "/master-data/account-subcategory", icon: FolderOpen },
+      { label: "Departments", path: "/master-data/department", icon: Building },
+      { label: "Customer Types", path: "/master-data/customer-type", icon: UserSquare },
+      { label: "Projects", path: "/master-data/project", icon: FolderOpen },
+      { label: "Customers", path: "/master-data/customer", icon: Users },
+      { label: "Item Suppliers", path: "/master-data/item-supplier", icon: Users }
     ]
   },
   {
@@ -104,7 +105,8 @@ export const NAV_TREE: NavGroup[] = [
     children: [
       { label: "Purchase Request", path: "/purchasing/purchase-requests", icon: ShoppingCart },
       { label: "Purchase Order Management", path: "/purchasing/purchase-orders", icon: ClipboardList },
-      { label: "Purchase Invoice", path: "/purchasing/purchase-invoices", icon: Receipt }
+      { label: "Purchase Invoice", path: "/purchasing/purchase-invoices", icon: Receipt },
+      { label: "Purchasing Dashboard", path: "/purchasing/dashboard", icon: BarChart3 }
     ]
   },
   {
@@ -163,12 +165,12 @@ export const NAV_TREE: NavGroup[] = [
   {
     group: "Dashboards",
     children: [
+      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
       { label: "Report Generation", path: "/dashboards/report-generation", icon: BarChart },
       { label: "Approval Management", path: "/dashboards/approval-management", icon: ClipboardCheck },
       { label: "Content Request Management", path: "/dashboards/content-requests", icon: MessageSquare },
       { label: "Financial Dashboard", path: "/dashboards/financial", icon: PieChart },
       { label: "Meeting Minutes Management", path: "/dashboards/meeting-minutes", icon: NotebookPen },
-      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
       { label: "Director/Supervisor Approvals", path: "/dashboards/director-approvals", icon: Users2 }
     ]
   },
