@@ -24,9 +24,13 @@ import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
 // Import purchasing pages
 import { PurchaseRequestsPage } from '@/pages/purchasing/purchase-requests'
+import { PurchaseOrdersPage } from '@/pages/purchasing/purchase-orders'
+import { PurchaseInvoicesPage } from '@/pages/purchasing/purchase-invoices'
 
 // Import warehouse pages
 import { SKUManagementPage } from '@/pages/warehouse/sku-management'
+import { ReceiveItemsPage } from '@/pages/warehouse/receive-items'
+import { ComplaintReturPage } from '@/pages/warehouse/complaint-retur'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -70,8 +74,16 @@ export function AppRouter() {
         return <DeliveryOrdersPage />
       case '/purchasing/purchase-requests':
         return <PurchaseRequestsPage />
+      case '/purchasing/purchase-orders':
+        return <PurchaseOrdersPage />
+      case '/purchasing/purchase-invoices':
+        return <PurchaseInvoicesPage />
       case '/warehouse/sku-management':
         return <SKUManagementPage />
+      case '/warehouse/receive-items':
+        return <ReceiveItemsPage />
+      case '/warehouse/complaint-retur':
+        return <ComplaintReturPage />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
