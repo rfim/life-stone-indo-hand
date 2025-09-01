@@ -24,13 +24,31 @@ import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
 // Import purchasing pages
 import { PurchaseRequestsPage } from '@/pages/purchasing/purchase-requests'
+import { CreatePurchaseRequestPage } from '@/pages/purchasing/purchase-requests/create'
+import { ViewPurchaseRequestPage } from '@/pages/purchasing/purchase-requests/view'
+import { EditPurchaseRequestPage } from '@/pages/purchasing/purchase-requests/edit'
 import { PurchaseOrdersPage } from '@/pages/purchasing/purchase-orders'
+import { CreatePurchaseOrderPage } from '@/pages/purchasing/purchase-orders/create'
+import { ViewPurchaseOrderPage } from '@/pages/purchasing/purchase-orders/view'
+import { EditPurchaseOrderPage } from '@/pages/purchasing/purchase-orders/edit'
 import { PurchaseInvoicesPage } from '@/pages/purchasing/purchase-invoices'
+import { CreatePurchaseInvoicePage } from '@/pages/purchasing/purchase-invoices/create'
+import { ViewPurchaseInvoicePage } from '@/pages/purchasing/purchase-invoices/view'
+import { EditPurchaseInvoicePage } from '@/pages/purchasing/purchase-invoices/edit'
 
 // Import warehouse pages
 import { SKUManagementPage } from '@/pages/warehouse/sku-management'
+import { CreateSKUPage } from '@/pages/warehouse/sku-management/create'
+import { ViewSKUPage } from '@/pages/warehouse/sku-management/view'
+import { EditSKUPage } from '@/pages/warehouse/sku-management/edit'
 import { ReceiveItemsPage } from '@/pages/warehouse/receive-items'
+import { CreateReceiveItemsPage } from '@/pages/warehouse/receive-items/create'
+import { ViewReceiveItemsPage } from '@/pages/warehouse/receive-items/view'
+import { EditReceiveItemsPage } from '@/pages/warehouse/receive-items/edit'
 import { ComplaintReturPage } from '@/pages/warehouse/complaint-retur'
+import { CreateComplaintReturPage } from '@/pages/warehouse/complaint-retur/create'
+import { ViewComplaintReturPage } from '@/pages/warehouse/complaint-retur/view'
+import { EditComplaintReturPage } from '@/pages/warehouse/complaint-retur/edit'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -72,18 +90,6 @@ export function AppRouter() {
         return <VendorPage />
       case '/logistics/delivery-orders':
         return <DeliveryOrdersPage />
-      case '/purchasing/purchase-requests':
-        return <PurchaseRequestsPage />
-      case '/purchasing/purchase-orders':
-        return <PurchaseOrdersPage />
-      case '/purchasing/purchase-invoices':
-        return <PurchaseInvoicesPage />
-      case '/warehouse/sku-management':
-        return <SKUManagementPage />
-      case '/warehouse/receive-items':
-        return <ReceiveItemsPage />
-      case '/warehouse/complaint-retur':
-        return <ComplaintReturPage />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
@@ -98,8 +104,51 @@ export function AppRouter() {
       {/* Redirect root to dashboard overview */}
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
       
-      {/* Generate routes for all navigation paths */}
-      {allPaths.map((path) => (
+      {/* Purchase Orders - dedicated pages */}
+      <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
+      <Route path="/purchasing/purchase-orders/create" element={<CreatePurchaseOrderPage />} />
+      <Route path="/purchasing/purchase-orders/:id/view" element={<ViewPurchaseOrderPage />} />
+      <Route path="/purchasing/purchase-orders/:id/edit" element={<EditPurchaseOrderPage />} />
+      
+      {/* Purchase Requests - dedicated pages */}
+      <Route path="/purchasing/purchase-requests" element={<PurchaseRequestsPage />} />
+      <Route path="/purchasing/purchase-requests/create" element={<CreatePurchaseRequestPage />} />
+      <Route path="/purchasing/purchase-requests/:id/view" element={<ViewPurchaseRequestPage />} />
+      <Route path="/purchasing/purchase-requests/:id/edit" element={<EditPurchaseRequestPage />} />
+      
+      {/* Purchase Invoices - dedicated pages */}
+      <Route path="/purchasing/purchase-invoices" element={<PurchaseInvoicesPage />} />
+      <Route path="/purchasing/purchase-invoices/create" element={<CreatePurchaseInvoicePage />} />
+      <Route path="/purchasing/purchase-invoices/:id/view" element={<ViewPurchaseInvoicePage />} />
+      <Route path="/purchasing/purchase-invoices/:id/edit" element={<EditPurchaseInvoicePage />} />
+      
+      {/* SKU Management - dedicated pages */}
+      <Route path="/warehouse/sku-management" element={<SKUManagementPage />} />
+      <Route path="/warehouse/sku-management/create" element={<CreateSKUPage />} />
+      <Route path="/warehouse/sku-management/:id/view" element={<ViewSKUPage />} />
+      <Route path="/warehouse/sku-management/:id/edit" element={<EditSKUPage />} />
+      
+      {/* Receive Items - dedicated pages */}
+      <Route path="/warehouse/receive-items" element={<ReceiveItemsPage />} />
+      <Route path="/warehouse/receive-items/create" element={<CreateReceiveItemsPage />} />
+      <Route path="/warehouse/receive-items/:id/view" element={<ViewReceiveItemsPage />} />
+      <Route path="/warehouse/receive-items/:id/edit" element={<EditReceiveItemsPage />} />
+      
+      {/* Complaint Retur - dedicated pages */}
+      <Route path="/warehouse/complaint-retur" element={<ComplaintReturPage />} />
+      <Route path="/warehouse/complaint-retur/create" element={<CreateComplaintReturPage />} />
+      <Route path="/warehouse/complaint-retur/:id/view" element={<ViewComplaintReturPage />} />
+      <Route path="/warehouse/complaint-retur/:id/edit" element={<EditComplaintReturPage />} />
+      
+      {/* Generate routes for all other navigation paths */}
+      {allPaths.filter(path => 
+        !path.startsWith('/purchasing/purchase-orders') &&
+        !path.startsWith('/purchasing/purchase-requests') &&
+        !path.startsWith('/purchasing/purchase-invoices') &&
+        !path.startsWith('/warehouse/sku-management') &&
+        !path.startsWith('/warehouse/receive-items') &&
+        !path.startsWith('/warehouse/complaint-retur')
+      ).map((path) => (
         <Route
           key={path}
           path={path}
