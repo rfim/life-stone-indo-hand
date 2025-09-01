@@ -25,6 +25,9 @@ import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 // Import purchasing pages
 import { PurchaseRequestsPage } from '@/pages/purchasing/purchase-requests'
 import { PurchaseOrdersPage } from '@/pages/purchasing/purchase-orders'
+import { CreatePurchaseOrderPage } from '@/pages/purchasing/purchase-orders/create'
+import { ViewPurchaseOrderPage } from '@/pages/purchasing/purchase-orders/view'
+import { EditPurchaseOrderPage } from '@/pages/purchasing/purchase-orders/edit'
 import { PurchaseInvoicesPage } from '@/pages/purchasing/purchase-invoices'
 
 // Import warehouse pages
@@ -74,8 +77,6 @@ export function AppRouter() {
         return <DeliveryOrdersPage />
       case '/purchasing/purchase-requests':
         return <PurchaseRequestsPage />
-      case '/purchasing/purchase-orders':
-        return <PurchaseOrdersPage />
       case '/purchasing/purchase-invoices':
         return <PurchaseInvoicesPage />
       case '/warehouse/sku-management':
@@ -98,8 +99,14 @@ export function AppRouter() {
       {/* Redirect root to dashboard overview */}
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
       
-      {/* Generate routes for all navigation paths */}
-      {allPaths.map((path) => (
+      {/* Purchase Orders - dedicated pages */}
+      <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
+      <Route path="/purchasing/purchase-orders/create" element={<CreatePurchaseOrderPage />} />
+      <Route path="/purchasing/purchase-orders/:id/view" element={<ViewPurchaseOrderPage />} />
+      <Route path="/purchasing/purchase-orders/:id/edit" element={<EditPurchaseOrderPage />} />
+      
+      {/* Generate routes for all other navigation paths */}
+      {allPaths.filter(path => !path.startsWith('/purchasing/purchase-orders')).map((path) => (
         <Route
           key={path}
           path={path}

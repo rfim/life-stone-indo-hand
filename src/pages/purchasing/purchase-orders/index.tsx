@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { MasterList, getDefaultColumns } from '../../master-data/common/list'
-import { MasterForm } from '../../master-data/common/form'
 import { makeLocalStorageAdapter } from '../../master-data/common/adapters'
-import { PurchaseOrderFields } from './fields'
-import { purchaseOrderSchema, PurchaseOrderFormData } from './schema'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Mail, FileText, Truck, AlertTriangle, CreditCard, Building } from 'lucide-react'
@@ -66,21 +63,13 @@ const adapter = makeLocalStorageAdapter<PurchaseOrder>('erp.purchasing.orders')
 
 export function PurchaseOrdersPage() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const [rows, setRows] = useState<PurchaseOrder[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-
-  // Auto-open form if create=true in URL
-  useEffect(() => {
-    if (searchParams.get('create') === 'true') {
-      setIsSheetOpen(true)
-    }
-  }, [searchParams])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -110,53 +99,15 @@ export function PurchaseOrdersPage() {
   }
 
   const handleCreate = () => {
-    setEditingId(null)
-    setIsSheetOpen(true)
+    navigate('/purchasing/purchase-orders/create')
+  }
+
+  const handleView = (id: string) => {
+    navigate(`/purchasing/purchase-orders/${id}/view`)
   }
 
   const handleEdit = (id: string) => {
-    setEditingId(id)
-    setIsSheetOpen(true)
-  }
-
-  const handleSave = async (data: PurchaseOrderFormData) => {
-    setIsLoading(true)
-    try {
-      // Generate order number if not provided
-      if (!data.orderNumber) {
-        const date = new Date()
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const count = rows.length + 1
-        data.orderNumber = `PO/${year}/${month}/${String(count).padStart(4, '0')}`
-      }
-
-      const orderData: PurchaseOrder = {
-        id: editingId || crypto.randomUUID(),
-        code: data.orderNumber,
-        name: `PO for ${data.supplierName}`,
-        active: data.status !== 'cancelled',
-        createdAt: editingId ? rows.find(r => r.id === editingId)?.createdAt || new Date().toISOString() : new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...data
-      }
-
-      if (editingId) {
-        await adapter.update(editingId, orderData)
-        toast.success('Purchase order updated successfully')
-      } else {
-        await adapter.create(orderData)
-        toast.success('Purchase order created successfully')
-      }
-      
-      setIsSheetOpen(false)
-      loadData()
-    } catch (error) {
-      console.error('Save failed:', error)
-      toast.error('Failed to save purchase order')
-    } finally {
-      setIsLoading(false)
-    }
+    navigate(`/purchasing/purchase-orders/${id}/edit`)
   }
 
   const handleSendToSupplier = async (id: string) => {
@@ -264,6 +215,28 @@ export function PurchaseOrdersPage() {
           </div>
         )
       }
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (row: PurchaseOrder) => (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleView(row.id)}
+          >
+            View
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(row.id)}
+          >
+            Edit
+          </Button>
+        </div>
+      )
     }
   ]
 
@@ -288,7 +261,7 @@ export function PurchaseOrdersPage() {
   ]
 
   return (
-    <>
+    <div className="p-6">
       <MasterList
         title="Purchase Orders"
         rows={rows}
@@ -299,27 +272,10 @@ export function PurchaseOrdersPage() {
         onPageChange={handlePageChange}
         onSearch={handleSearch}
         onCreate={handleCreate}
-        onEdit={handleEdit}
+        onEdit={() => {}} // Using custom actions column instead
         columns={columns}
         isLoading={isLoading}
       />
-
-      <MasterForm
-        title={editingId ? 'Edit Purchase Order' : 'Create Purchase Order'}
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        onSave={handleSave}
-        schema={purchaseOrderSchema}
-        defaultValues={editingId ? rows.find(r => r.id === editingId) : undefined}
-        isLoading={isLoading}
-      >
-        {(form) => (
-          <PurchaseOrderFields 
-            form={form} 
-            isEdit={!!editingId}
-          />
-        )}
-      </MasterForm>
-    </>
+    </div>
   )
 }
