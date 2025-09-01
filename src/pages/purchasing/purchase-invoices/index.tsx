@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { MasterList, getDefaultColumns } from '../../master-data/common/list'
 import { MasterForm } from '../../master-data/common/form'
@@ -42,6 +42,7 @@ const adapter = makeLocalStorageAdapter<PurchaseInvoice>('erp.purchasing.invoice
 
 export function PurchaseInvoicesPage() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const [rows, setRows] = useState<PurchaseInvoice[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
