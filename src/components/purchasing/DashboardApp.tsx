@@ -47,7 +47,7 @@ const DATE_RANGES: { label: string; value: DateRange }[] = [
 ]
 
 const CURRENCIES = [
-  { label: 'All Currencies', value: '' },
+  { label: 'All Currencies', value: 'all' },
   { label: 'IDR', value: 'IDR' },
   { label: 'USD', value: 'USD' },
   { label: 'EUR', value: 'EUR' },
@@ -68,7 +68,7 @@ export function DashboardApp() {
   const [customDateFrom, setCustomDateFrom] = useState<Date>()
   const [customDateTo, setCustomDateTo] = useState<Date>()
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('')
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
   // Calculate date range
@@ -115,7 +115,7 @@ export function DashboardApp() {
     from: getDateRange.from,
     to: getDateRange.to,
     supplierIds: selectedSuppliers.length > 0 ? selectedSuppliers : undefined,
-    currency: selectedCurrency || undefined,
+    currency: selectedCurrency !== 'all' ? selectedCurrency as 'IDR' | 'USD' | 'EUR' : undefined,
     q: searchQuery || undefined
   }
 
@@ -141,7 +141,7 @@ export function DashboardApp() {
     setCustomDateFrom(undefined)
     setCustomDateTo(undefined)
     setSelectedSuppliers([])
-    setSelectedCurrency('')
+    setSelectedCurrency('all')
     setSearchQuery('')
   }
 
@@ -149,7 +149,7 @@ export function DashboardApp() {
   const activeFiltersCount = [
     dateRange !== '30d',
     selectedSuppliers.length > 0,
-    selectedCurrency,
+    selectedCurrency !== 'all',
     searchQuery
   ].filter(Boolean).length
 
@@ -307,7 +307,7 @@ export function DashboardApp() {
                     Date: {DATE_RANGES.find(r => r.value === dateRange)?.label}
                   </Badge>
                 )}
-                {selectedCurrency && (
+                {selectedCurrency !== 'all' && (
                   <Badge variant="secondary">
                     Currency: {selectedCurrency}
                   </Badge>

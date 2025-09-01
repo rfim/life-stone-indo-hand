@@ -164,12 +164,13 @@ export const NAV_TREE: NavGroup[] = [
   {
     group: "Dashboards",
     children: [
+      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
+      { label: "Purchasing Dashboard", path: "/dashboards/purchasing", icon: ShoppingCart },
       { label: "Report Generation", path: "/dashboards/report-generation", icon: BarChart },
       { label: "Approval Management", path: "/dashboards/approval-management", icon: ClipboardCheck },
       { label: "Content Request Management", path: "/dashboards/content-requests", icon: MessageSquare },
       { label: "Financial Dashboard", path: "/dashboards/financial", icon: PieChart },
       { label: "Meeting Minutes Management", path: "/dashboards/meeting-minutes", icon: NotebookPen },
-      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
       { label: "Director/Supervisor Approvals", path: "/dashboards/director-approvals", icon: Users2 }
     ]
   },

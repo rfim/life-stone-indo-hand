@@ -50,6 +50,9 @@ import { CreateComplaintReturPage } from '@/pages/warehouse/complaint-retur/crea
 import { ViewComplaintReturPage } from '@/pages/warehouse/complaint-retur/view'
 import { EditComplaintReturPage } from '@/pages/warehouse/complaint-retur/edit'
 
+// Import purchasing dashboard
+import { DashboardApp } from '@/components/purchasing/DashboardApp'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -58,6 +61,8 @@ export function AppRouter() {
     switch (path) {
       case '/dashboards/overview':
         return <DashboardOverview />
+      case '/dashboards/purchasing':
+        return <DashboardApp />
       case '/master-data':
         return <MasterDataIndexPage />
       case '/master-data/category':
@@ -103,6 +108,9 @@ export function AppRouter() {
     <Routes>
       {/* Redirect root to dashboard overview */}
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
+      
+      {/* Purchasing Dashboard */}
+      <Route path="/dashboards/purchasing" element={<DashboardApp />} />
       
       {/* Purchase Orders - dedicated pages */}
       <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
