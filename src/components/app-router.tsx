@@ -22,6 +22,9 @@ import { OriginPage } from '@/pages/master-data/origin'
 import { VendorPage } from '@/pages/master-data/vendor'
 import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
+// Import purchasing pages
+import { PurchaseRequestsPage } from '@/pages/purchasing/purchase-requests'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -62,6 +65,8 @@ export function AppRouter() {
         return <VendorPage />
       case '/logistics/delivery-orders':
         return <DeliveryOrdersPage />
+      case '/purchasing/purchase-requests':
+        return <PurchaseRequestsPage />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
