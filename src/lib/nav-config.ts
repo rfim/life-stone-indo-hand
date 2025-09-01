@@ -105,7 +105,8 @@ export const NAV_TREE: NavGroup[] = [
     children: [
       { label: "Purchase Request", path: "/purchasing/purchase-requests", icon: ShoppingCart },
       { label: "Purchase Order Management", path: "/purchasing/purchase-orders", icon: ClipboardList },
-      { label: "Purchase Invoice", path: "/purchasing/purchase-invoices", icon: Receipt }
+      { label: "Purchase Invoice", path: "/purchasing/purchase-invoices", icon: Receipt },
+      { label: "Purchasing Dashboard", path: "/purchasing/dashboard", icon: BarChart3 }
     ]
   },
   {
@@ -164,12 +165,12 @@ export const NAV_TREE: NavGroup[] = [
   {
     group: "Dashboards",
     children: [
+      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
       { label: "Report Generation", path: "/dashboards/report-generation", icon: BarChart },
       { label: "Approval Management", path: "/dashboards/approval-management", icon: ClipboardCheck },
       { label: "Content Request Management", path: "/dashboards/content-requests", icon: MessageSquare },
       { label: "Financial Dashboard", path: "/dashboards/financial", icon: PieChart },
       { label: "Meeting Minutes Management", path: "/dashboards/meeting-minutes", icon: NotebookPen },
-      { label: "Dashboard Overview", path: "/dashboards/overview", icon: BarChart3 },
       { label: "Director/Supervisor Approvals", path: "/dashboards/director-approvals", icon: Users2 }
     ]
   },
