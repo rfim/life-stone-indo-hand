@@ -699,4 +699,3 @@ function SimpleDeliveryOrderView({ deliveryOrder, onClose, onVoid, onPrint }: Si
 }
 
 export default DeliveryOrdersPage
-export { DeliveryOrdersPage }
