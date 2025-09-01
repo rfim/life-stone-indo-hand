@@ -61,7 +61,7 @@ export function AppRouter() {
     switch (path) {
       case '/dashboards/overview':
         return <DashboardOverview />
-      case '/dashboards/purchasing':
+      case '/purchasing/dashboard':
         return <DashboardApp />
       case '/master-data':
         return <MasterDataIndexPage />
@@ -110,7 +110,7 @@ export function AppRouter() {
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
       
       {/* Purchasing Dashboard */}
-      <Route path="/dashboards/purchasing" element={<DashboardApp />} />
+      <Route path="/purchasing/dashboard" element={<DashboardApp />} />
       
       {/* Purchase Orders - dedicated pages */}
       <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
