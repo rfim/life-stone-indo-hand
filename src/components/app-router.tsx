@@ -4,10 +4,15 @@ import { ListPage } from '@/components/list-page'
 import { GenericMasterPage } from '@/components/generic-master-page'
 import { DashboardOverview } from '@/components/dashboard-overview'
 
-// Import specific page components
-import { CategoriesPage } from '@/pages/masters/categories'
-import { SuppliersPage } from '@/pages/masters/suppliers'
-import { ProductsPage } from '@/pages/masters/products'
+// Import new master data pages
+import { MasterDataIndexPage } from '@/pages/master-data'
+import { CategoryPage } from '@/pages/master-data/category'
+import { SupplierPage } from '@/pages/master-data/supplier'
+import { CurrencyPage } from '@/pages/master-data/currency'
+import { VehiclePage } from '@/pages/master-data/vehicle'
+import { CustomerPage } from '@/pages/master-data/customer'
+import { MaterialTypePage } from '@/pages/master-data/material-type'
+import { FinishingPage } from '@/pages/master-data/finishing'
 import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
 export function AppRouter() {
@@ -18,12 +23,22 @@ export function AppRouter() {
     switch (path) {
       case '/dashboards/overview':
         return <DashboardOverview />
-      case '/masters/categories':
-        return <CategoriesPage />
-      case '/masters/suppliers':
-        return <SuppliersPage />
-      case '/masters/products':
-        return <ProductsPage />
+      case '/master-data':
+        return <MasterDataIndexPage />
+      case '/master-data/category':
+        return <CategoryPage />
+      case '/master-data/supplier':
+        return <SupplierPage />
+      case '/master-data/currency':
+        return <CurrencyPage />
+      case '/master-data/vehicle':
+        return <VehiclePage />
+      case '/master-data/customer':
+        return <CustomerPage />
+      case '/master-data/material-type':
+        return <MaterialTypePage />
+      case '/master-data/finishing':
+        return <FinishingPage />
       case '/logistics/delivery-orders':
         return <DeliveryOrdersPage />
       default:
