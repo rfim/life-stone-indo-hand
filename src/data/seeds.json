@@ -1,0 +1,31 @@
+{
+  "suppliers": ["Mentari Stone", "Rajawali Keramik", "Cipta Marmer Alam", "Global Granite", "Prima Logistics"],
+  "prs": [
+    {"id":"pr_1001","code":"PR-2025-001","requester":"Kevin","suppliers":["Mentari Stone","Global Granite"],"total":95000000,"currency":"IDR","neededBy":"2025-09-20","status":"Submitted","createdAt":"2025-09-01"},
+    {"id":"pr_1002","code":"PR-2025-002","requester":"Nathan","suppliers":["Rajawali Keramik"],"total":6800,"currency":"USD","neededBy":"2025-09-08","status":"DirectorApproved","createdAt":"2025-08-27"},
+    {"id":"pr_1003","code":"PR-2025-003","requester":"Rafhi","suppliers":["Cipta Marmer Alam"],"total":42000000,"currency":"IDR","neededBy":"2025-09-10","status":"Submitted","createdAt":"2025-08-30"}
+  ],
+  "pos": [
+    {"id":"po_2001","code":"PO-2025-010","supplier":"Mentari Stone","status":"InTransit","eta":"2025-09-04","unpaid":true,"top":"30 Days","total":93000000,"currency":"IDR"},
+    {"id":"po_2002","code":"PO-2025-011","supplier":"Rajawali Keramik","status":"Sent","eta":"2025-09-06","unpaid":true,"top":"45 Days","total":7200,"currency":"USD"},
+    {"id":"po_2003","code":"PO-2025-012","supplier":"Cipta Marmer Alam","status":"Delivered","eta":"2025-08-29","unpaid":false,"top":"Cash","total":28500000,"currency":"IDR"},
+    {"id":"po_2004","code":"PO-2025-013","supplier":"Global Granite","status":"Draft","unpaid":false,"top":"30 Days","total":12000,"currency":"USD"}
+  ],
+  "invoices": [
+    {"id":"inv_3001","code":"INV-2025-090","supplier":"Mentari Stone","dueDate":"2025-09-05","status":"Submitted","total":93000000,"currency":"IDR","qrUrl":"/qr/inv_3001.png"},
+    {"id":"inv_3002","code":"INV-2025-091","supplier":"Rajawali Keramik","dueDate":"2025-09-02","status":"Approved","total":7200,"currency":"USD"},
+    {"id":"inv_3003","code":"INV-2025-092","supplier":"Global Granite","dueDate":"2025-09-10","status":"Draft","total":12000,"currency":"USD"}
+  ],
+  "grns": [
+    {"id":"grn_4001","code":"GRN-2025-030","poCode":"PO-2025-012","receivedAt":"2025-08-29","defectsPct":2.5,"itemsCount":18,"hasUnsku":true},
+    {"id":"grn_4002","code":"GRN-2025-031","poCode":"PO-2025-010","receivedAt":"2025-08-31","defectsPct":5.0,"itemsCount":22,"hasUnsku":false}
+  ],
+  "skuGaps": [
+    {"id":"gap_5001","tempItemName":"Slab Carrara A12","qty":4,"area":18.2,"receivedAt":"2025-08-31","grnId":"grn_4002"},
+    {"id":"gap_5002","tempItemName":"Granite Black K2","qty":2,"area":9.6,"receivedAt":"2025-08-29","grnId":"grn_4001"}
+  ],
+  "complaints": [
+    {"id":"cmp_6001","code":"CMP-2025-007","supplier":"Mentari Stone","reason":"Ujung batu retak","nominal":2500000,"status":"Opened","ageDays":3,"isFreeSlab":false},
+    {"id":"cmp_6002","code":"CMP-2025-008","supplier":"Cipta Marmer Alam","reason":"Free slab gores (free slab)","nominal":0,"status":"Acknowledged","ageDays":1,"isFreeSlab":true}
+  ]
+}
