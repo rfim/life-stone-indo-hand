@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import { format, subDays, addDays, isAfter, isBefore, isEqual, differenceInDays } from 'date-fns'
 import {
   PRSummary,
   POSummary,
@@ -35,12 +35,12 @@ class MockDataProvider {
   }
 
   private filterByDateRange(data: any[], params: FilterParams, dateField: string) {
-    const fromDate = dayjs(params.from)
-    const toDate = dayjs(params.to)
+    const fromDate = new Date(params.from)
+    const toDate = new Date(params.to)
     
     return data.filter(item => {
-      const itemDate = dayjs(item[dateField])
-      return itemDate.isAfter(fromDate) && itemDate.isBefore(toDate)
+      const itemDate = new Date(item[dateField])
+      return isAfter(itemDate, fromDate) && isBefore(itemDate, toDate)
     })
   }
 
@@ -95,12 +95,12 @@ class MockDataProvider {
 
   // Calculate previous period for delta comparison
   private getPreviousPeriod(params: FilterParams): FilterParams {
-    const fromDate = dayjs(params.from)
-    const toDate = dayjs(params.to)
-    const duration = toDate.diff(fromDate, 'day')
+    const fromDate = new Date(params.from)
+    const toDate = new Date(params.to)
+    const duration = differenceInDays(toDate, fromDate)
     
-    const prevTo = fromDate.subtract(1, 'day')
-    const prevFrom = prevTo.subtract(duration, 'day')
+    const prevTo = subDays(fromDate, 1)
+    const prevFrom = subDays(prevTo, duration)
     
     return {
       ...params,
@@ -173,17 +173,17 @@ class MockDataProvider {
     const poUnpaid = pos.filter(po => po.unpaid)
     
     // Invoices due within 7 days
-    const now = dayjs()
+    const now = new Date()
     const invoicesDue7 = invoices.filter(inv => {
-      const dueDate = dayjs(inv.dueDate)
-      return dueDate.diff(now, 'day') <= 7 && inv.status !== 'Paid' && inv.status !== 'Archived'
+      const dueDate = new Date(inv.dueDate)
+      return differenceInDays(dueDate, now) <= 7 && inv.status !== 'Paid' && inv.status !== 'Archived'
     })
 
     // Shipments H-3 (ETA within next 3 days)
     const shipmentsH3 = pos.filter(po => {
       if (!po.eta) return false
-      const eta = dayjs(po.eta)
-      return eta.diff(now, 'day') <= 3 && eta.isAfter(now)
+      const eta = new Date(po.eta)
+      return differenceInDays(eta, now) <= 3 && isAfter(eta, now)
     }).length
 
     // Open complaints (excluding free slabs)
@@ -200,7 +200,7 @@ class MockDataProvider {
       // Find related PO by supplier match
       const relatedPo = pos.find(po => pr.suppliers.includes(po.supplier))
       if (relatedPo && relatedPo.eta) {
-        const leadTime = dayjs(relatedPo.eta).diff(dayjs(pr.createdAt), 'day')
+        const leadTime = new Date(relatedPo.eta); differenceInDays(new Date(), new Date(pr.createdAt))
         if (leadTime > 0) {
           totalLeadTime += leadTime
           leadTimeCount++
@@ -217,7 +217,7 @@ class MockDataProvider {
     deliveredPos.forEach(po => {
       const grn = grns.find(g => g.poCode === po.code)
       if (grn && po.eta) {
-        const isOnTime = dayjs(grn.receivedAt).isSameOrBefore(dayjs(po.eta))
+        const isOnTime = new Date(grn.receivedAt); (isEqual(item.date, new Date(po.eta)) || isBefore(item.date, new Date(po.eta)))
         if (isOnTime) onTimeCount++
       }
     })

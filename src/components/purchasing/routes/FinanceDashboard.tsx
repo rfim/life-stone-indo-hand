@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import dayjs from 'dayjs'
+import { format, isAfter, differenceInDays, isBefore } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -44,11 +44,11 @@ export function FinanceDashboard({ filterParams }: FinanceDashboardProps) {
   )
 
   const invoicesDueOverdue = useMemo(() => {
-    const now = dayjs()
+    const now = new Date()
     return invoices.filter(inv => {
-      const dueDate = dayjs(inv.dueDate)
-      return (dueDate.diff(now, 'day') <= 7 || dueDate.isBefore(now)) && inv.status !== 'Paid' && inv.status !== 'Archived'
-    }).sort((a, b) => dayjs(a.dueDate).valueOf() - dayjs(b.dueDate).valueOf())
+      const dueDate = new Date(inv.dueDate)
+      return (differenceInDays(dueDate, now) <= 7 || isBefore(dueDate, now)) && inv.status !== 'Paid' && inv.status !== 'Archived'
+    }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
   }, [invoices])
 
   // Chart data
@@ -69,7 +69,7 @@ export function FinanceDashboard({ filterParams }: FinanceDashboardProps) {
     const monthlyPayments = invoices
       .filter(inv => inv.status === 'Paid')
       .reduce((acc, inv) => {
-        const month = dayjs(inv.dueDate).format('MMM YYYY')
+        const month = format(new Date(inv.dueDate), 'MMM YYYY')
         acc[month] = (acc[month] || 0) + inv.total
         return acc
       }, {} as Record<string, number>)
@@ -137,7 +137,7 @@ export function FinanceDashboard({ filterParams }: FinanceDashboardProps) {
       header: 'ETA/Due',
       cell: ({ row }) => {
         if (!row.original.eta) return '-'
-        const eta = dayjs(row.original.eta)
+        const eta = new Date(row.original.eta)
         return eta.format('MMM DD, YYYY')
       }
     },
@@ -203,9 +203,9 @@ export function FinanceDashboard({ filterParams }: FinanceDashboardProps) {
       accessorKey: 'dueDate',
       header: 'Due Date',
       cell: ({ row }) => {
-        const dueDate = dayjs(row.original.dueDate)
-        const isOverdue = dueDate.isBefore(dayjs())
-        const daysUntil = dueDate.diff(dayjs(), 'day')
+        const dueDate = new Date(row.original.dueDate)
+        const isOverdue = dueDate.isBefore(new Date())
+        const daysUntil = differenceInDays(dueDate, new Date())
         
         return (
           <div className="flex items-center space-x-2">

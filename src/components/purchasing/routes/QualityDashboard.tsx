@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import dayjs from 'dayjs'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ColumnDef } from '@tanstack/react-table'
+import { format, isAfter, differenceInDays, subDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -65,8 +68,8 @@ export function QualityDashboard({ filterParams }: QualityDashboardProps) {
     // Simulate defect trend over time based on complaint data
     const dailyDefects = complaints.reduce((acc, complaint) => {
       // Estimate complaint date from ageDays
-      const complaintDate = dayjs().subtract(complaint.ageDays, 'day')
-      const day = complaintDate.format('MMM DD')
+      const complaintDate = subDays(new Date(), complaint.ageDays)
+      const day = format(complaintDate, 'MMM dd')
       
       if (!acc[day]) acc[day] = { day, count: 0, nominal: 0 }
       acc[day].count += 1
@@ -75,7 +78,7 @@ export function QualityDashboard({ filterParams }: QualityDashboardProps) {
     }, {} as Record<string, { day: string; count: number; nominal: number }>)
 
     return Object.values(dailyDefects).sort((a, b) => 
-      dayjs(a.day, 'MMM DD').valueOf() - dayjs(b.day, 'MMM DD').valueOf()
+      new Date(a.day, 'MMM DD').getTime() - new Date(b.day, 'MMM DD').getTime()
     )
   }, [complaints])
 

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import dayjs from 'dayjs'
+import { format, startOfDay, endOfDay, subDays, startOfQuarter } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -73,39 +73,39 @@ export function DashboardApp() {
 
   // Calculate date range
   const getDateRange = useMemo(() => {
-    const now = dayjs()
+    const now = new Date()
     
     switch (dateRange) {
       case 'Today':
         return {
-          from: now.startOf('day').format('YYYY-MM-DD'),
-          to: now.endOf('day').format('YYYY-MM-DD')
+          from: format(startOfDay(now), 'yyyy-MM-dd'),
+          to: format(endOfDay(now), 'yyyy-MM-dd')
         }
       case '7d':
         return {
-          from: now.subtract(7, 'day').format('YYYY-MM-DD'),
-          to: now.format('YYYY-MM-DD')
+          from: format(subDays(now, 7), 'yyyy-MM-dd'),
+          to: format(now, 'yyyy-MM-dd')
         }
       case '30d':
         return {
-          from: now.subtract(30, 'day').format('YYYY-MM-DD'),
-          to: now.format('YYYY-MM-DD')
+          from: format(subDays(now, 30), 'yyyy-MM-dd'),
+          to: format(now, 'yyyy-MM-dd')
         }
       case 'Quarter':
-        const quarterStart = now.startOf('quarter')
+        const quarterStart = startOfQuarter(now)
         return {
-          from: quarterStart.format('YYYY-MM-DD'),
-          to: now.format('YYYY-MM-DD')
+          from: format(quarterStart, 'yyyy-MM-dd'),
+          to: format(now, 'yyyy-MM-dd')
         }
       case 'Custom':
         return {
-          from: customDateFrom ? dayjs(customDateFrom).format('YYYY-MM-DD') : now.subtract(30, 'day').format('YYYY-MM-DD'),
-          to: customDateTo ? dayjs(customDateTo).format('YYYY-MM-DD') : now.format('YYYY-MM-DD')
+          from: customDateFrom ? format(customDateFrom, 'yyyy-MM-dd') : format(subDays(now, 30), 'yyyy-MM-dd'),
+          to: customDateTo ? format(customDateTo, 'yyyy-MM-dd') : format(now, 'yyyy-MM-dd')
         }
       default:
         return {
-          from: now.subtract(30, 'day').format('YYYY-MM-DD'),
-          to: now.format('YYYY-MM-DD')
+          from: format(subDays(now, 30), 'yyyy-MM-dd'),
+          to: format(now, 'yyyy-MM-dd')
         }
     }
   }, [dateRange, customDateFrom, customDateTo])
@@ -213,7 +213,7 @@ export function DashboardApp() {
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start">
                         <CalendarIcon className="h-4 w-4 mr-2" />
-                        {customDateFrom ? dayjs(customDateFrom).format('MMM DD, YYYY') : 'Select date'}
+                        {customDateFrom ? format(customDateFrom, 'MMM dd, yyyy') : 'Select date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -232,7 +232,7 @@ export function DashboardApp() {
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start">
                         <CalendarIcon className="h-4 w-4 mr-2" />
-                        {customDateTo ? dayjs(customDateTo).format('MMM DD, YYYY') : 'Select date'}
+                        {customDateTo ? format(customDateTo, 'MMM dd, yyyy') : 'Select date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">

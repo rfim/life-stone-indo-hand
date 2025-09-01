@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import dayjs from 'dayjs'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ColumnDef } from '@tanstack/react-table'
+import { format, isAfter, differenceInDays, isSameDay, subDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -41,32 +44,32 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
 
   // Filter data for warehouse view
   const shipmentsH3 = useMemo(() => {
-    const now = dayjs()
+    const now = new Date()
     return pos.filter(po => {
       if (!po.eta) return false
-      const eta = dayjs(po.eta)
-      return eta.diff(now, 'day') <= 3 && eta.isAfter(now)
+      const eta = new Date(po.eta)
+      return differenceInDays(eta, now) <= 3 && isAfter(eta, now)
     })
   }, [pos])
 
   const todaysGRNs = useMemo(() => {
-    const today = dayjs()
+    const today = new Date()
     return grns.filter(grn => 
-      dayjs(grn.receivedAt).isSame(today, 'day')
+      new Date(grn.receivedAt); isSameDay(dateVar, today)
     )
   }, [grns])
 
   const recentGRNs = useMemo(() => {
-    const sevenDaysAgo = dayjs().subtract(7, 'day')
+    const sevenDaysAgo = subDays(new Date(), 7)
     return grns.filter(grn => 
-      dayjs(grn.receivedAt).isAfter(sevenDaysAgo)
-    ).sort((a, b) => dayjs(b.receivedAt).valueOf() - dayjs(a.receivedAt).valueOf())
+      isAfter(new Date(grn.receivedAt), sevenDaysAgo)
+    ).sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime())
   }, [grns])
 
   // Chart data
   const receivingTrendData = useMemo(() => {
     const dailyReceiving = grns.reduce((acc, grn) => {
-      const day = dayjs(grn.receivedAt).format('MMM DD')
+      const day = format(new Date(grn.receivedAt), 'MMM DD')
       if (!acc[day]) acc[day] = { day, count: 0, totalItems: 0 }
       acc[day].count += 1
       acc[day].totalItems += grn.itemsCount
@@ -74,7 +77,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
     }, {} as Record<string, { day: string; count: number; totalItems: number }>)
 
     return Object.values(dailyReceiving).sort((a, b) => 
-      dayjs(a.day, 'MMM DD').valueOf() - dayjs(b.day, 'MMM DD').valueOf()
+      new Date(a.day, 'MMM DD').getTime() - new Date(b.day, 'MMM DD').getTime()
     )
   }, [grns])
 
@@ -110,8 +113,8 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
       accessorKey: 'eta',
       header: 'ETA',
       cell: ({ row }) => {
-        const eta = dayjs(row.original.eta)
-        const daysUntil = eta.diff(dayjs(), 'day')
+        const eta = new Date(row.original.eta)
+        const daysUntil = eta; differenceInDays(dateVar, new Date())
         
         return (
           <div className="flex items-center space-x-2">
@@ -187,8 +190,8 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
       accessorKey: 'receivedAt',
       header: 'Received At',
       cell: ({ row }) => {
-        const receivedAt = dayjs(row.original.receivedAt)
-        const isToday = receivedAt.isSame(dayjs(), 'day')
+        const receivedAt = new Date(row.original.receivedAt)
+        const isToday = receivedAt; isSameDay(dateVar, new Date())
         
         return (
           <div className="flex items-center space-x-2">
@@ -275,7 +278,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
     {
       accessorKey: 'receivedAt',
       header: 'Received',
-      cell: ({ row }) => dayjs(row.original.receivedAt).format('MMM DD, YYYY')
+      cell: ({ row }) => format(new Date(row.original.receivedAt), 'MMM DD, YYYY')
     },
     {
       accessorKey: 'grnId',

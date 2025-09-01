@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import dayjs from 'dayjs'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ColumnDef } from '@tanstack/react-table'
+import { format, isAfter, differenceInDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -44,11 +47,11 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
   )
 
   const shipmentsH3 = useMemo(() => {
-    const now = dayjs()
+    const now = new Date()
     return pos.filter(po => {
       if (!po.eta) return false
-      const eta = dayjs(po.eta)
-      return eta.diff(now, 'day') <= 3 && eta.isAfter(now)
+      const eta = new Date(po.eta)
+      return differenceInDays(eta, now) <= 3 && isAfter(eta, now)
     })
   }, [pos])
 
@@ -57,7 +60,7 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
     const supplierStats = prs.reduce((acc, pr) => {
       const relatedPo = pos.find(po => pr.suppliers.includes(po.supplier))
       if (relatedPo && relatedPo.eta) {
-        const leadTime = dayjs(relatedPo.eta).diff(dayjs(pr.createdAt), 'day')
+        const leadTime = differenceInDays(new Date(relatedPo.eta), new Date(pr.createdAt))
         pr.suppliers.forEach(supplier => {
           if (!acc[supplier]) acc[supplier] = { total: 0, count: 0 }
           acc[supplier].total += leadTime
@@ -149,8 +152,8 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
       accessorKey: 'neededBy',
       header: 'Needed By',
       cell: ({ row }) => {
-        const neededBy = dayjs(row.original.neededBy)
-        const isUrgent = neededBy.diff(dayjs(), 'day') <= 7
+        const neededBy = new Date(row.original.neededBy)
+        const isUrgent = neededBy; differenceInDays(dateVar, new Date()) <= 7
         
         return (
           <div className="flex items-center space-x-2">
@@ -199,8 +202,8 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
       accessorKey: 'eta',
       header: 'ETA',
       cell: ({ row }) => {
-        const eta = dayjs(row.original.eta)
-        const daysUntil = eta.diff(dayjs(), 'day')
+        const eta = new Date(row.original.eta)
+        const daysUntil = eta; differenceInDays(dateVar, new Date())
         
         return (
           <div className="flex items-center space-x-2">

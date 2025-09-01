@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import dayjs from 'dayjs'
+import { format, isAfter, differenceInDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { 
@@ -44,10 +44,10 @@ export function ExecutiveDashboard({ filterParams }: ExecutiveDashboardProps) {
   )
 
   const invoicesDueSoon = useMemo(() => {
-    const now = dayjs()
+    const now = new Date()
     return invoices.filter(inv => {
-      const dueDate = dayjs(inv.dueDate)
-      return dueDate.diff(now, 'day') <= 7 && inv.status !== 'Paid' && inv.status !== 'Archived'
+      const dueDate = new Date(inv.dueDate)
+      return differenceInDays(dueDate, now) <= 7 && inv.status !== 'Paid' && inv.status !== 'Archived'
     })
   }, [invoices])
 
@@ -55,7 +55,7 @@ export function ExecutiveDashboard({ filterParams }: ExecutiveDashboardProps) {
   const spendOverTimeData = useMemo(() => {
     // Aggregate spend by month
     const monthlySpend = prs.reduce((acc, pr) => {
-      const month = dayjs(pr.createdAt).format('MMM YYYY')
+      const month = format(new Date(pr.createdAt), 'MMM yyyy')
       acc[month] = (acc[month] || 0) + pr.total
       return acc
     }, {} as Record<string, number>)
@@ -140,13 +140,13 @@ export function ExecutiveDashboard({ filterParams }: ExecutiveDashboardProps) {
     {
       accessorKey: 'neededBy',
       header: 'Needed By',
-      cell: ({ row }) => dayjs(row.original.neededBy).format('MMM DD, YYYY')
+      cell: ({ row }) => format(new Date(row.original.neededBy), 'MMM dd, yyyy')
     },
     {
       accessorKey: 'age',
       header: 'Age',
       cell: ({ row }) => {
-        const age = dayjs().diff(dayjs(row.original.createdAt), 'day')
+        const age = differenceInDays(new Date(), new Date(row.original.createdAt))
         return `${age} days`
       }
     },
@@ -189,13 +189,14 @@ export function ExecutiveDashboard({ filterParams }: ExecutiveDashboardProps) {
       accessorKey: 'dueDate',
       header: 'Due Date',
       cell: ({ row }) => {
-        const dueDate = dayjs(row.original.dueDate)
-        const isOverdue = dueDate.isBefore(dayjs())
-        const isUrgent = dueDate.diff(dayjs(), 'day') <= 3
+        const dueDate = new Date(row.original.dueDate)
+        const now = new Date()
+        const isOverdue = isAfter(now, dueDate)
+        const isUrgent = differenceInDays(dueDate, now) <= 3
         
         return (
           <div className="flex items-center space-x-2">
-            <span>{dueDate.format('MMM DD, YYYY')}</span>
+            <span>{format(dueDate, 'MMM dd, yyyy')}</span>
             {isOverdue && <Badge variant="destructive">Overdue</Badge>}
             {!isOverdue && isUrgent && <Badge variant="secondary">Urgent</Badge>}
           </div>
