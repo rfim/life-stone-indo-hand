@@ -12,13 +12,13 @@ export function OriginFields({ form }: OriginFieldsProps) {
   return (
     <FormField
       control={form.control}
-      name="description"
+      name="address"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>Address</FormLabel>
           <FormControl>
             <Textarea 
-              placeholder="Enter description (optional)" 
+              placeholder="Enter address (optional)" 
               rows={3}
               {...field} 
             />

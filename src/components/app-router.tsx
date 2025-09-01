@@ -13,6 +13,13 @@ import { VehiclePage } from '@/pages/master-data/vehicle'
 import { CustomerPage } from '@/pages/master-data/customer'
 import { MaterialTypePage } from '@/pages/master-data/material-type'
 import { FinishingPage } from '@/pages/master-data/finishing'
+import { ProductPage } from '@/pages/master-data/product'
+import { WarehousePage } from '@/pages/master-data/warehouse'
+import { DepartmentPage } from '@/pages/master-data/department'
+import { CustomerTypePage } from '@/pages/master-data/customer-type'
+import { AccountCategoryPage } from '@/pages/master-data/account-category'
+import { OriginPage } from '@/pages/master-data/origin'
+import { VendorPage } from '@/pages/master-data/vendor'
 import { DeliveryOrdersPage } from '@/pages/logistics/delivery-orders'
 
 export function AppRouter() {
@@ -39,6 +46,20 @@ export function AppRouter() {
         return <MaterialTypePage />
       case '/master-data/finishing':
         return <FinishingPage />
+      case '/master-data/product':
+        return <ProductPage />
+      case '/master-data/warehouse':
+        return <WarehousePage />
+      case '/master-data/department':
+        return <DepartmentPage />
+      case '/master-data/customer-type':
+        return <CustomerTypePage />
+      case '/master-data/account-category':
+        return <AccountCategoryPage />
+      case '/master-data/origin':
+        return <OriginPage />
+      case '/master-data/vendor':
+        return <VendorPage />
       case '/logistics/delivery-orders':
         return <DeliveryOrdersPage />
       default:

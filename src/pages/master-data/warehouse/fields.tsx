@@ -12,13 +12,13 @@ export function WarehouseFields({ form }: WarehouseFieldsProps) {
   return (
     <FormField
       control={form.control}
-      name="description"
+      name="location"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>Location</FormLabel>
           <FormControl>
             <Textarea 
-              placeholder="Enter description (optional)" 
+              placeholder="Enter location (optional)" 
               rows={3}
               {...field} 
             />

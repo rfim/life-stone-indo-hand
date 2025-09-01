@@ -7,7 +7,7 @@ const baseMasterSchema = z.object({
 });
 
 export const departmentSchema = baseMasterSchema.extend({
-  description: z.string().optional(),
+  head: z.string().optional(),
 });
 
 export type DepartmentFormData = z.infer<typeof departmentSchema>;

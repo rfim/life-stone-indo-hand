@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { DepartmentFormData } from './schema';
 
@@ -12,14 +12,13 @@ export function DepartmentFields({ form }: DepartmentFieldsProps) {
   return (
     <FormField
       control={form.control}
-      name="description"
+      name="head"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>Department Head</FormLabel>
           <FormControl>
-            <Textarea 
-              placeholder="Enter description (optional)" 
-              rows={3}
+            <Input 
+              placeholder="Enter department head name (optional)" 
               {...field} 
             />
           </FormControl>

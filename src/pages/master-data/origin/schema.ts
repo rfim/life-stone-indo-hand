@@ -7,7 +7,7 @@ const baseMasterSchema = z.object({
 });
 
 export const originSchema = baseMasterSchema.extend({
-  description: z.string().optional(),
+  address: z.string().optional(),
 });
 
 export type OriginFormData = z.infer<typeof originSchema>;

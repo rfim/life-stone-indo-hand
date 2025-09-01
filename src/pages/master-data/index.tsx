@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { 
   Building, 
   Users, 
@@ -81,21 +83,21 @@ const masters: MasterInfo[] = [
     description: 'Product catalog and specifications',
     icon: Package,
     path: '/master-data/product',
-    implemented: false
+    implemented: true
   },
   {
     name: 'Warehouses',
     description: 'Storage locations and facilities',
     icon: Building2,
     path: '/master-data/warehouse',
-    implemented: false
+    implemented: true
   },
   {
     name: 'Departments',
     description: 'Organizational departments',
     icon: Building,
     path: '/master-data/department',
-    implemented: false
+    implemented: true
   },
   {
     name: 'Expeditions',
@@ -109,7 +111,28 @@ const masters: MasterInfo[] = [
     description: 'Customer type classifications',
     icon: FileText,
     path: '/master-data/customer-type',
-    implemented: false
+    implemented: true
+  },
+  {
+    name: 'Account Categories',
+    description: 'Account category classifications',
+    icon: FileText,
+    path: '/master-data/account-category',
+    implemented: true
+  },
+  {
+    name: 'Origins',
+    description: 'Product origin locations',
+    icon: Building,
+    path: '/master-data/origin',
+    implemented: true
+  },
+  {
+    name: 'Vendors',
+    description: 'Vendor information and contacts',
+    icon: Users,
+    path: '/master-data/vendor',
+    implemented: true
   }
 ];
 
@@ -123,39 +146,64 @@ export function MasterDataIndexPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {masters.map((master) => (
-          <Card key={master.path} className={`transition-all ${master.implemented ? 'hover:shadow-md' : 'opacity-60'}`}>
-            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-              <div className="flex items-center space-x-2">
-                <master.icon className="h-5 w-5" />
-                <CardTitle className="text-lg">{master.name}</CardTitle>
-              </div>
-              {master.implemented && (
-                <div className="ml-auto">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4">
-                {master.description}
-              </CardDescription>
-              {master.implemented ? (
-                <Link to={master.path}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Manage {master.name}
-                  </Button>
-                </Link>
-              ) : (
-                <Button variant="outline" size="sm" className="w-full" disabled>
-                  Coming Soon
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Master Data Entities
+          </CardTitle>
+          <CardDescription>
+            Complete list of master data entities in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[150px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {masters.map((master) => (
+                  <TableRow key={master.path}>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <master.icon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{master.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-muted-foreground">{master.description}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={master.implemented ? 'default' : 'secondary'}>
+                        {master.implemented ? 'Active' : 'Coming Soon'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {master.implemented ? (
+                        <Link to={master.path}>
+                          <Button variant="outline" size="sm">
+                            Manage
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button variant="outline" size="sm" disabled>
+                          Coming Soon
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

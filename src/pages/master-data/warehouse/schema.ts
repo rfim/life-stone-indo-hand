@@ -7,7 +7,7 @@ const baseMasterSchema = z.object({
 });
 
 export const warehouseSchema = baseMasterSchema.extend({
-  description: z.string().optional(),
+  location: z.string().optional(),
 });
 
 export type WarehouseFormData = z.infer<typeof warehouseSchema>;

@@ -7,7 +7,9 @@ const baseMasterSchema = z.object({
 });
 
 export const vendorSchema = baseMasterSchema.extend({
-  description: z.string().optional(),
+  contact: z.string().optional(),
+  email: z.string().email('Invalid email format').optional().or(z.literal('')),
+  phone: z.string().optional(),
 });
 
 export type VendorFormData = z.infer<typeof vendorSchema>;
