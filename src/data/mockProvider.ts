@@ -9,6 +9,21 @@ import {
   KpiBundle,
   FilterParams
 } from './purchasing-types'
+import {
+  Location,
+  SKU,
+  Inventory,
+  Movement,
+  Adjustment,
+  StockCardRow,
+  SIK,
+  InboundRequest,
+  MovementSummary,
+  AdjustmentSummary,
+  InventorySummary,
+  WarehouseKpis,
+  WarehouseFilterParams
+} from './warehouse-types'
 import seedData from './seeds.json'
 
 class MockDataProvider {
@@ -19,6 +34,16 @@ class MockDataProvider {
   private skuGaps: SKUGap[] = []
   private complaints: ComplaintSummary[] = []
   private suppliers: string[] = []
+  
+  // Warehouse data
+  private locations: Location[] = []
+  private skus: SKU[] = []
+  private inventory: Inventory[] = []
+  private movements: Movement[] = []
+  private adjustments: Adjustment[] = []
+  private stockCards: StockCardRow[] = []
+  private siks: SIK[] = []
+  private inboundRequests: InboundRequest[] = []
 
   constructor() {
     this.loadSeedData()
@@ -32,6 +57,16 @@ class MockDataProvider {
     this.grns = seedData.grns as GRNSummary[]
     this.skuGaps = seedData.skuGaps as SKUGap[]
     this.complaints = seedData.complaints as ComplaintSummary[]
+    
+    // Load warehouse data
+    this.locations = (seedData as any).locations as Location[]
+    this.skus = (seedData as any).skus as SKU[]
+    this.inventory = (seedData as any).inventory as Inventory[]
+    this.movements = (seedData as any).movements as Movement[]
+    this.adjustments = (seedData as any).adjustments as Adjustment[]
+    this.stockCards = (seedData as any).stockCards as StockCardRow[]
+    this.siks = (seedData as any).siks as SIK[]
+    this.inboundRequests = (seedData as any).inboundRequests as InboundRequest[]
   }
 
   private filterByDateRange(data: any[], params: FilterParams, dateField: string) {
@@ -259,6 +294,234 @@ class MockDataProvider {
 
   async getSuppliers(): Promise<string[]> {
     return this.suppliers
+  }
+
+  // Warehouse Management Methods
+  
+  async getLocations(): Promise<Location[]> {
+    return this.locations
+  }
+
+  async getSKUs(params: WarehouseFilterParams = {}): Promise<SKU[]> {
+    let filtered = this.skus
+    
+    if (params.q) {
+      const query = params.q.toLowerCase()
+      filtered = filtered.filter(sku => 
+        sku.code.toLowerCase().includes(query) ||
+        sku.name.toLowerCase().includes(query) ||
+        sku.description?.toLowerCase().includes(query)
+      )
+    }
+    
+    return filtered
+  }
+
+  async getInventory(params: WarehouseFilterParams = {}): Promise<InventorySummary[]> {
+    let filtered = this.inventory
+    
+    if (params.skuIds?.length) {
+      filtered = filtered.filter(inv => params.skuIds!.includes(inv.skuId))
+    }
+    
+    if (params.locationIds?.length) {
+      filtered = filtered.filter(inv => params.locationIds!.includes(inv.locationId))
+    }
+    
+    if (params.finishing) {
+      filtered = filtered.filter(inv => inv.finishing === params.finishing)
+    }
+    
+    // Convert to summary format with joined data
+    return filtered.map(inv => {
+      const sku = this.skus.find(s => s.id === inv.skuId)
+      const location = this.locations.find(l => l.id === inv.locationId)
+      
+      return {
+        skuId: inv.skuId,
+        skuCode: sku?.code || 'Unknown',
+        skuName: sku?.name || 'Unknown',
+        locationId: inv.locationId,
+        locationName: location?.name || 'Unknown',
+        finishing: inv.finishing,
+        onHand: inv.onHand,
+        reserved: inv.reserved,
+        available: inv.available,
+        incoming: inv.incoming,
+        outgoing: inv.outgoing,
+        uom: sku?.uom || 'PCS',
+        minLevel: sku?.minLevel,
+        belowMin: inv.available < (sku?.minLevel || 0)
+      } as InventorySummary
+    })
+  }
+
+  async getMovements(params: WarehouseFilterParams = {}): Promise<MovementSummary[]> {
+    let filtered = this.movements
+    
+    // Apply date filter
+    if (params.from && params.to) {
+      filtered = this.filterByDateRange(filtered, { from: params.from, to: params.to }, 'createdAt')
+    }
+    
+    if (params.type) {
+      filtered = filtered.filter(mov => mov.type === params.type)
+    }
+    
+    if (params.status) {
+      filtered = filtered.filter(mov => mov.status === params.status)
+    }
+    
+    if (params.skuIds?.length) {
+      filtered = filtered.filter(mov => params.skuIds!.includes(mov.skuId))
+    }
+    
+    // Convert to summary format
+    return filtered.map(mov => {
+      const sku = this.skus.find(s => s.id === mov.skuId)
+      const fromLocation = mov.fromLocationId ? this.locations.find(l => l.id === mov.fromLocationId) : null
+      const toLocation = mov.toLocationId ? this.locations.find(l => l.id === mov.toLocationId) : null
+      
+      return {
+        id: mov.id,
+        type: mov.type,
+        skuCode: sku?.code || 'Unknown',
+        skuName: sku?.name || 'Unknown',
+        qty: mov.qty,
+        uom: mov.uom,
+        fromLocation: fromLocation?.name,
+        toLocation: toLocation?.name,
+        status: mov.status,
+        createdAt: mov.createdAt
+      } as MovementSummary
+    })
+  }
+
+  async getAdjustments(params: WarehouseFilterParams = {}): Promise<AdjustmentSummary[]> {
+    let filtered = this.adjustments
+    
+    // Apply date filter
+    if (params.from && params.to) {
+      filtered = this.filterByDateRange(filtered, { from: params.from, to: params.to }, 'createdAt')
+    }
+    
+    if (params.type) {
+      filtered = filtered.filter(adj => adj.adjType === params.type)
+    }
+    
+    if (params.status) {
+      filtered = filtered.filter(adj => adj.status === params.status)
+    }
+    
+    // Convert to summary format
+    return filtered.map(adj => {
+      const sku = this.skus.find(s => s.id === adj.skuId)
+      const location = this.locations.find(l => l.id === adj.locationId)
+      
+      return {
+        id: adj.id,
+        adjType: adj.adjType,
+        skuCode: sku?.code || 'Unknown',
+        skuName: sku?.name || 'Unknown',
+        qtyDelta: adj.qtyDelta,
+        uom: adj.uom,
+        location: location?.name || 'Unknown',
+        status: adj.status,
+        createdAt: adj.createdAt
+      } as AdjustmentSummary
+    })
+  }
+
+  async getStockCard(skuId: string, params: WarehouseFilterParams = {}): Promise<StockCardRow[]> {
+    let filtered = this.stockCards.filter(card => card.skuId === skuId)
+    
+    // Apply date filter
+    if (params.from && params.to) {
+      filtered = this.filterByDateRange(filtered, { from: params.from, to: params.to }, 'ts')
+    }
+    
+    if (params.locationIds?.length) {
+      filtered = filtered.filter(card => 
+        !card.locationId || params.locationIds!.includes(card.locationId)
+      )
+    }
+    
+    if (params.finishing) {
+      filtered = filtered.filter(card => 
+        !card.finishing || card.finishing === params.finishing
+      )
+    }
+    
+    return filtered.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+  }
+
+  async getSIKs(params: WarehouseFilterParams = {}): Promise<SIK[]> {
+    let filtered = this.siks
+    
+    if (params.type) {
+      filtered = filtered.filter(sik => sik.sikType === params.type)
+    }
+    
+    if (params.status) {
+      filtered = filtered.filter(sik => sik.status === params.status)
+    }
+    
+    return filtered
+  }
+
+  async getInboundRequests(params: WarehouseFilterParams = {}): Promise<InboundRequest[]> {
+    let filtered = this.inboundRequests
+    
+    if (params.status) {
+      filtered = filtered.filter(req => req.status === params.status)
+    }
+    
+    return filtered
+  }
+
+  async getWarehouseKpis(params: WarehouseFilterParams = {}): Promise<WarehouseKpis> {
+    const inventory = await this.getInventory(params)
+    const movements = await this.getMovements(params)
+    const adjustments = await this.getAdjustments(params)
+    const siks = await this.getSIKs(params)
+    const inboundRequests = await this.getInboundRequests(params)
+    
+    // Calculate KPIs
+    const totalOnHand = inventory.reduce((sum, inv) => sum + inv.onHand, 0)
+    const totalReserved = inventory.reduce((sum, inv) => sum + inv.reserved, 0)
+    const totalAvailable = inventory.reduce((sum, inv) => sum + inv.available, 0)
+    const totalIncoming = inventory.reduce((sum, inv) => sum + inv.incoming, 0)
+    const totalOutgoing = inventory.reduce((sum, inv) => sum + inv.outgoing, 0)
+    const itemsBelowMin = inventory.filter(inv => inv.belowMin).length
+    
+    const today = format(new Date(), 'yyyy-MM-dd')
+    const movementsToday = movements.filter(mov => 
+      mov.createdAt.startsWith(today)
+    ).length
+    const adjustmentsToday = adjustments.filter(adj => 
+      adj.createdAt.startsWith(today)
+    ).length
+    
+    const siksActive = siks.filter(sik => 
+      sik.status === 'Issued' || sik.status === 'InProgress'
+    ).length
+    
+    const inboundRequestsPending = inboundRequests.filter(req => 
+      req.status === 'Planned' || req.status === 'Scheduled'
+    ).length
+
+    return {
+      totalOnHand: { value: totalOnHand },
+      totalReserved: { value: totalReserved },
+      totalAvailable: { value: totalAvailable },
+      totalIncoming: { value: totalIncoming },
+      totalOutgoing: { value: totalOutgoing },
+      itemsBelowMin: { value: itemsBelowMin },
+      movementsToday: { value: movementsToday },
+      adjustmentsToday: { value: adjustmentsToday },
+      siksActive: { value: siksActive },
+      inboundRequestsPending: { value: inboundRequestsPending }
+    }
   }
 
   // Export functionality

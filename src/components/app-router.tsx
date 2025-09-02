@@ -53,6 +53,10 @@ import { EditComplaintReturPage } from '@/pages/warehouse/complaint-retur/edit'
 // Import purchasing dashboard
 import { DashboardApp } from '@/components/purchasing/DashboardApp'
 
+// Import warehouse dashboard
+import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
+import { StockCard } from '@/components/warehouse/StockCard'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -63,6 +67,8 @@ export function AppRouter() {
         return <DashboardOverview />
       case '/purchasing/dashboard':
         return <DashboardApp />
+      case '/warehouse/dashboard':
+        return <WarehouseDashboard />
       case '/master-data':
         return <MasterDataIndexPage />
       case '/master-data/category':
@@ -111,6 +117,10 @@ export function AppRouter() {
       
       {/* Purchasing Dashboard */}
       <Route path="/purchasing/dashboard" element={<DashboardApp />} />
+      
+      {/* Warehouse Dashboard */}
+      <Route path="/warehouse/dashboard" element={<WarehouseDashboard />} />
+      <Route path="/warehouse/stock-card/:skuId" element={<StockCard />} />
       
       {/* Purchase Orders - dedicated pages */}
       <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
