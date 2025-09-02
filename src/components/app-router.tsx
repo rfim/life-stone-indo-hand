@@ -7,6 +7,13 @@ import { DashboardOverview } from '@/components/dashboard-overview'
 // Import specific pages that exist
 import { DashboardApp } from '@/components/purchasing/DashboardApp'
 import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
+import { FinancialDashboard } from '@/components/finance/FinancialDashboard'
+import { InvoiceManagement } from '@/components/finance/InvoiceManagement'
+import { PaymentApproval } from '@/components/finance/PaymentApproval'
+import { PaymentManagement } from '@/components/finance/PaymentManagement'
+import { ReimbursementManagement } from '@/components/finance/ReimbursementManagement'
+import { AccountingJournal } from '@/components/finance/AccountingJournal'
+import { AccountPropertiesPL } from '@/components/finance/AccountPropertiesPL'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -20,6 +27,20 @@ export function AppRouter() {
         return <DashboardApp />
       case '/warehouse/dashboard':
         return <WarehouseDashboard />
+      case '/dashboards/financial':
+        return <FinancialDashboard />
+      case '/finance/invoice-management':
+        return <InvoiceManagement />
+      case '/finance/payment-approval':
+        return <PaymentApproval />
+      case '/finance/payment-management':
+        return <PaymentManagement />
+      case '/finance/reimbursement':
+        return <ReimbursementManagement />
+      case '/finance/accounting-journal':
+        return <AccountingJournal />
+      case '/finance/account-properties-pl':
+        return <AccountPropertiesPL />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
