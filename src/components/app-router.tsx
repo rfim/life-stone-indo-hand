@@ -57,6 +57,28 @@ import { DashboardApp } from '@/components/purchasing/DashboardApp'
 import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
 import { StockCard } from '@/components/warehouse/StockCard'
 
+// Import marketing pages
+import { MarketingDashboard } from '@/pages/marketing/dashboard'
+import { ColdCallsPage } from '@/pages/marketing/cold-calls'
+import { CreateColdCallPage } from '@/pages/marketing/cold-calls/create'
+import { ViewColdCallPage } from '@/pages/marketing/cold-calls/view'
+import { EditColdCallPage } from '@/pages/marketing/cold-calls/edit'
+import { SalesOrdersPage } from '@/pages/marketing/sales-orders'
+import { CreateSalesOrderPage } from '@/pages/marketing/sales-orders/create'
+import { ViewSalesOrderPage } from '@/pages/marketing/sales-orders/view'
+import { MeetingMinutesPage } from '@/pages/marketing/meeting-minutes'
+import { CreateMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/create'
+import { ViewMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/view'
+import { EditMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/edit'
+import { CloneMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/clone'
+import { ContractsPage } from '@/pages/marketing/contracts'
+import { CreateContractPage } from '@/pages/marketing/contracts/create'
+import { ViewContractPage } from '@/pages/marketing/contracts/view'
+import { PriceListsPage } from '@/pages/marketing/price-lists'
+import { CommissionsPage } from '@/pages/marketing/commissions'
+import { DeliveryOrdersPage } from '@/pages/marketing/delivery-orders'
+import { SettingsPage } from '@/pages/marketing/settings'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -69,6 +91,14 @@ export function AppRouter() {
         return <DashboardApp />
       case '/warehouse/dashboard':
         return <WarehouseDashboard />
+      case '/marketing/dashboard':
+        return <MarketingDashboard />
+      case '/marketing/cold-calls':
+        return <ColdCallsPage />
+      case '/marketing/sales-orders':
+        return <SalesOrdersPage />
+      case '/marketing/meeting-minutes':
+        return <MeetingMinutesPage />
       case '/master-data':
         return <MasterDataIndexPage />
       case '/master-data/category':
@@ -114,6 +144,43 @@ export function AppRouter() {
     <Routes>
       {/* Redirect root to dashboard overview */}
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
+      
+      {/* Marketing Dashboard */}
+      <Route path="/marketing/dashboard" element={<MarketingDashboard />} />
+      
+      {/* Marketing Pages */}
+      <Route path="/marketing/cold-calls" element={<ColdCallsPage />} />
+      <Route path="/marketing/cold-calls/create" element={<CreateColdCallPage />} />
+      <Route path="/marketing/cold-calls/:id/view" element={<ViewColdCallPage />} />
+      <Route path="/marketing/cold-calls/:id/edit" element={<EditColdCallPage />} />
+      
+      {/* Meeting Minutes */}
+      <Route path="/marketing/meeting-minutes" element={<MeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/create" element={<CreateMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/view" element={<ViewMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/edit" element={<EditMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/clone" element={<CloneMeetingMinutesPage />} />
+      
+      <Route path="/marketing/sales-orders" element={<SalesOrdersPage />} />
+      <Route path="/marketing/sales-orders/create" element={<CreateSalesOrderPage />} />
+      <Route path="/marketing/sales-orders/:id/view" element={<ViewSalesOrderPage />} />
+      
+      {/* Contracts */}
+      <Route path="/marketing/contracts" element={<ContractsPage />} />
+      <Route path="/marketing/contracts/create" element={<CreateContractPage />} />
+      <Route path="/marketing/contracts/:id/view" element={<ViewContractPage />} />
+      
+      {/* Price Lists */}
+      <Route path="/marketing/price-lists" element={<PriceListsPage />} />
+      
+      {/* Commissions */}
+      <Route path="/marketing/commissions" element={<CommissionsPage />} />
+      
+      {/* Delivery Orders */}
+      <Route path="/marketing/delivery-orders" element={<DeliveryOrdersPage />} />
+      
+      {/* Settings */}
+      <Route path="/marketing/settings" element={<SettingsPage />} />
       
       {/* Purchasing Dashboard */}
       <Route path="/purchasing/dashboard" element={<DashboardApp />} />
