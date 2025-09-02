@@ -68,5 +68,87 @@
   "inboundRequests": [
     {"id":"inb1","code":"INB-2025-022","supplierId":"supplier_cma","supplierName":"Cipta Marmer Alam","refPO":"PO-2025-013","etaDate":"2025-09-02","items":[{"skuId":"sku_blackk2","skuCode":"BLK-K2","desc":"Granite Black K2","qty":2,"uom":"SLAB","finishing":"HONED"}],"warehouseReady":false,"status":"Scheduled","notes":"Butuh forklift besar untuk handling","createdAt":"2025-08-31T10:00:00Z","updatedAt":"2025-08-31T10:00:00Z"},
     {"id":"inb2","code":"INB-2025-023","supplierId":"supplier_mentari","supplierName":"Mentari Stone","refPO":"PO-2025-010","etaDate":"2025-09-04","items":[{"skuId":"sku_carrara","skuCode":"CRR-A12","desc":"Marble Carrara A12","qty":3,"uom":"SLAB","finishing":"POLISHED"}],"warehouseReady":true,"status":"Planned","notes":"Regular delivery","createdAt":"2025-09-01T09:00:00Z","updatedAt":"2025-09-01T09:00:00Z"}
+  ],
+  "customers": [
+    {"id":"cust_001","name":"PT Properti Prima","phone":"+6281234567890","email":"procurement@propertip.com","address":"Jl. Sudirman No 123, Jakarta","creditLimit":500000000,"paymentTerms":"NET_30","isActive":true},
+    {"id":"cust_002","name":"Hotel Grandis","phone":"+6281234567891","email":"purchase@hotelgrandis.id","address":"Jl. Thamrin No 45, Jakarta","creditLimit":300000000,"paymentTerms":"NET_45","isActive":true},
+    {"id":"cust_003","name":"Villa Mewah Residence","phone":"+6281234567892","email":"info@villamewah.com","address":"Jl. BSD Raya No 88, BSD","creditLimit":200000000,"paymentTerms":"NET_30","isActive":true}
+  ],
+  "projects": [
+    {"id":"proj_001","code":"PROJ-2025-001","customerId":"cust_001","customerName":"PT Properti Prima","name":"Lobby Renovation Project","area":"Commercial","source":"Reference","status":"ACTIVE","startDate":"2025-08-01","endDate":"2025-10-31","budget":750000000,"createdAt":"2025-07-15T10:00:00Z"},
+    {"id":"proj_002","code":"PROJ-2025-002","customerId":"cust_002","customerName":"Hotel Grandis","name":"Restaurant Flooring","area":"Hospitality","source":"Marketing","status":"ACTIVE","startDate":"2025-08-15","endDate":"2025-09-30","budget":400000000,"createdAt":"2025-07-20T10:00:00Z"},
+    {"id":"proj_003","code":"PROJ-2025-003","customerId":"cust_003","customerName":"Villa Mewah Residence","name":"Master Bathroom Marble","area":"Residential","source":"Referral","status":"PLANNING","startDate":"2025-09-01","endDate":"2025-11-15","budget":250000000,"createdAt":"2025-08-01T10:00:00Z"}
+  ],
+  "salesOrders": [
+    {"id":"so_001","code":"SO-2025-001","customerId":"cust_001","customerName":"PT Properti Prima","projectId":"proj_001","projectName":"Lobby Renovation Project","status":"CONFIRMED","currency":"IDR","top":"NET_30","isPPN":true,"total":675000000,"createdAt":"2025-08-02T10:00:00Z"},
+    {"id":"so_002","code":"SO-2025-002","customerId":"cust_002","customerName":"Hotel Grandis","projectId":"proj_002","projectName":"Restaurant Flooring","status":"CONFIRMED","currency":"IDR","top":"NET_45","isPPN":true,"total":360000000,"createdAt":"2025-08-16T10:00:00Z"},
+    {"id":"so_003","code":"SO-2025-003","customerId":"cust_003","customerName":"Villa Mewah Residence","projectId":"proj_003","projectName":"Master Bathroom Marble","status":"DRAFT","currency":"IDR","top":"NET_30","isPPN":true,"total":225000000,"createdAt":"2025-08-20T10:00:00Z"}
+  ],
+  "salesInvoices": [
+    {"id":"sinv_001","code":"SINV-2025-001","soId":"so_001","soCode":"SO-2025-001","customerId":"cust_001","customerName":"PT Properti Prima","projectId":"proj_001","projectName":"Lobby Renovation Project","status":"ISSUED","issueDate":"2025-08-15","dueDate":"2025-09-14","currency":"IDR","subtotal":607207207,"taxAmount":67792793,"total":675000000,"paidAmount":200000000,"remainingAmount":475000000,"qrPayload":"SINV|SINV-2025-001|cust_001|675000000|2025-09-14|verify.lifestone.id/sinv/001","pdfUrl":"/invoices/SINV-2025-001.pdf","sentAt":"2025-08-15T14:30:00Z","createdAt":"2025-08-15T10:00:00Z","agingDays":20},
+    {"id":"sinv_002","code":"SINV-2025-002","soId":"so_002","soCode":"SO-2025-002","customerId":"cust_002","customerName":"Hotel Grandis","projectId":"proj_002","projectName":"Restaurant Flooring","status":"SENT","issueDate":"2025-08-25","dueDate":"2025-10-09","currency":"IDR","subtotal":324324324,"taxAmount":35675676,"total":360000000,"paidAmount":0,"remainingAmount":360000000,"qrPayload":"SINV|SINV-2025-002|cust_002|360000000|2025-10-09|verify.lifestone.id/sinv/002","pdfUrl":"/invoices/SINV-2025-002.pdf","sentAt":"2025-08-25T16:00:00Z","createdAt":"2025-08-25T10:00:00Z","agingDays":10},
+    {"id":"sinv_003","code":"SINV-2025-003","soId":"so_001","soCode":"SO-2025-001","customerId":"cust_001","customerName":"PT Properti Prima","projectId":"proj_001","projectName":"Lobby Renovation Project","status":"OVERDUE","issueDate":"2025-07-15","dueDate":"2025-08-14","currency":"IDR","subtotal":450450450,"taxAmount":49549550,"total":500000000,"paidAmount":100000000,"remainingAmount":400000000,"qrPayload":"SINV|SINV-2025-003|cust_001|500000000|2025-08-14|verify.lifestone.id/sinv/003","pdfUrl":"/invoices/SINV-2025-003.pdf","sentAt":"2025-07-15T14:30:00Z","createdAt":"2025-07-15T10:00:00Z","agingDays":52}
+  ],
+  "paymentRequests": [
+    {"id":"preq_001","sourceType":"PURCHASE_ORDER","sourceId":"po_2001","sourceCode":"PO-2025-010","requestedBy":"Procurement Team","requestedAt":"2025-08-30T10:00:00Z","amount":93000000,"currency":"IDR","status":"APPROVED","note":"Payment for marble shipment","approvedBy":"Finance Manager","approvedAt":"2025-08-31T09:00:00Z"},
+    {"id":"preq_002","sourceType":"PURCHASE_ORDER","sourceId":"po_2002","sourceCode":"PO-2025-011","requestedBy":"Procurement Team","requestedAt":"2025-09-01T10:00:00Z","amount":7200,"currency":"USD","status":"PENDING","note":"Payment for ceramic tiles"},
+    {"id":"preq_003","sourceType":"REIMBURSEMENT","sourceId":"reimb_001","sourceCode":"REIMB-2025-001","requestedBy":"Project Manager","requestedAt":"2025-09-01T14:00:00Z","amount":2500000,"currency":"IDR","status":"PENDING","note":"Finishing change material costs"}
+  ],
+  "payments": [
+    {"id":"pay_001","sourceType":"PURCHASE_ORDER","sourceId":"po_2003","sourceCode":"PO-2025-012","requestId":"preq_001","amount":28500000,"currency":"IDR","status":"POSTED","approvedBy":"Finance Manager","verifiedBy":"Finance Officer","paidAt":"2025-08-29T16:00:00Z","proofUrl":"/payments/proof_pay_001.pdf","note":"Bank transfer completed","createdAt":"2025-08-29T10:00:00Z"},
+    {"id":"pay_002","sourceType":"INVOICE","sourceId":"sinv_001","sourceCode":"SINV-2025-001","amount":200000000,"currency":"IDR","status":"VERIFIED","approvedBy":"Finance Manager","verifiedBy":"Finance Officer","paidAt":"2025-08-20T10:00:00Z","proofUrl":"/payments/proof_pay_002.pdf","note":"Partial payment received from customer","createdAt":"2025-08-20T08:00:00Z"},
+    {"id":"pay_003","sourceType":"INVOICE","sourceId":"sinv_003","sourceCode":"SINV-2025-003","amount":100000000,"currency":"IDR","status":"POSTED","approvedBy":"Finance Manager","verifiedBy":"Finance Officer","paidAt":"2025-07-25T10:00:00Z","proofUrl":"/payments/proof_pay_003.pdf","note":"Partial payment from customer","createdAt":"2025-07-25T08:00:00Z"}
+  ],
+  "paymentAllocations": [
+    {"id":"alloc_001","paymentId":"pay_002","invoiceId":"sinv_001","invoiceCode":"SINV-2025-001","amountApplied":200000000},
+    {"id":"alloc_002","paymentId":"pay_003","invoiceId":"sinv_003","invoiceCode":"SINV-2025-003","amountApplied":100000000}
+  ],
+  "reimbursements": [
+    {"id":"reimb_001","code":"REIMB-2025-001","requesterId":"emp_001","requesterName":"Project Manager","projectId":"proj_001","projectName":"Lobby Renovation Project","category":"FINISHING_CHANGE","amount":2500000,"currency":"IDR","status":"APPROVED","description":"Additional material costs for finishing changes per customer request","receiptsCount":3,"createdAt":"2025-08-28T10:00:00Z","submittedAt":"2025-08-28T14:00:00Z","approvedBy":"Finance Manager","approvedAt":"2025-08-29T09:00:00Z"},
+    {"id":"reimb_002","code":"REIMB-2025-002","requesterId":"emp_002","requesterName":"Sales Manager","category":"ENTERTAINMENT","amount":1250000,"currency":"IDR","status":"SUBMITTED","description":"Client entertainment expenses for hotel project","receiptsCount":2,"createdAt":"2025-09-01T10:00:00Z","submittedAt":"2025-09-01T15:00:00Z"},
+    {"id":"reimb_003","code":"REIMB-2025-003","requesterId":"emp_003","requesterName":"Warehouse Supervisor","category":"OFFICE_SUPPLIES","amount":750000,"currency":"IDR","status":"PAID","description":"Office supplies for warehouse operations","receiptsCount":1,"createdAt":"2025-08-25T10:00:00Z","submittedAt":"2025-08-25T14:00:00Z","approvedBy":"Finance Manager","approvedAt":"2025-08-26T09:00:00Z","paidAt":"2025-08-27T10:00:00Z","proofUrl":"/reimbursements/proof_reimb_003.pdf"}
+  ],
+  "chartOfAccounts": [
+    {"id":"acc_001","code":"1100","name":"Cash and Bank","type":"ASSET","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":125000000},
+    {"id":"acc_002","code":"1200","name":"Accounts Receivable","type":"ASSET","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":835000000},
+    {"id":"acc_003","code":"1300","name":"Inventory","type":"ASSET","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":450000000},
+    {"id":"acc_004","code":"2100","name":"Accounts Payable","type":"LIABILITY","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":100200000},
+    {"id":"acc_005","code":"2200","name":"VAT Payable","type":"LIABILITY","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":74175000},
+    {"id":"acc_006","code":"3100","name":"Paid-in Capital","type":"EQUITY","isProfitLoss":false,"allowPosting":true,"currency":"IDR","isActive":true,"balance":1000000000},
+    {"id":"acc_007","code":"4100","name":"Sales Revenue","type":"REVENUE","isProfitLoss":true,"allowPosting":true,"currency":"IDR","isActive":true,"balance":1535000000},
+    {"id":"acc_008","code":"5100","name":"Cost of Goods Sold","type":"EXPENSE","isProfitLoss":true,"allowPosting":true,"currency":"IDR","isActive":true,"balance":920000000},
+    {"id":"acc_009","code":"5200","name":"Operating Expenses","type":"EXPENSE","isProfitLoss":true,"allowPosting":true,"currency":"IDR","isActive":true,"balance":185000000},
+    {"id":"acc_010","code":"5300","name":"Reimbursement Expenses","type":"EXPENSE","isProfitLoss":true,"allowPosting":true,"currency":"IDR","isActive":true,"balance":4500000}
+  ],
+  "journalEntries": [
+    {"id":"je_001","code":"JE-2025-001","memo":"Invoice SINV-2025-001 issued","status":"POSTED","journalDate":"2025-08-15","totalDebit":675000000,"totalCredit":675000000,"createdBy":"System","createdAt":"2025-08-15T10:00:00Z","postedAt":"2025-08-15T10:05:00Z","postedBy":"Finance Manager"},
+    {"id":"je_002","code":"JE-2025-002","memo":"Payment received for SINV-2025-001","status":"POSTED","journalDate":"2025-08-20","totalDebit":200000000,"totalCredit":200000000,"createdBy":"System","createdAt":"2025-08-20T08:00:00Z","postedAt":"2025-08-20T08:05:00Z","postedBy":"Finance Manager"},
+    {"id":"je_003","code":"JE-2025-003","memo":"Reimbursement payment REIMB-2025-003","status":"POSTED","journalDate":"2025-08-27","totalDebit":750000,"totalCredit":750000,"createdBy":"System","createdAt":"2025-08-27T10:00:00Z","postedAt":"2025-08-27T10:05:00Z","postedBy":"Finance Manager"},
+    {"id":"je_004","code":"JE-2025-004","memo":"Manual journal - month end accruals","status":"DRAFT","journalDate":"2025-08-31","totalDebit":5000000,"totalCredit":5000000,"createdBy":"Finance Manager","createdAt":"2025-08-31T17:00:00Z"}
+  ],
+  "journalLines": [
+    {"id":"jl_001","journalId":"je_001","accountId":"acc_002","accountCode":"1200","accountName":"Accounts Receivable","debit":675000000,"credit":0,"currency":"IDR","customerId":"cust_001","customerName":"PT Properti Prima","projectId":"proj_001","projectName":"Lobby Renovation Project","description":"Invoice SINV-2025-001"},
+    {"id":"jl_002","journalId":"je_001","accountId":"acc_007","accountCode":"4100","accountName":"Sales Revenue","debit":0,"credit":607207207,"currency":"IDR","customerId":"cust_001","customerName":"PT Properti Prima","projectId":"proj_001","projectName":"Lobby Renovation Project","description":"Sales revenue"},
+    {"id":"jl_003","journalId":"je_001","accountId":"acc_005","accountCode":"2200","accountName":"VAT Payable","debit":0,"credit":67792793,"currency":"IDR","description":"VAT 11%"},
+    {"id":"jl_004","journalId":"je_002","accountId":"acc_001","accountCode":"1100","accountName":"Cash and Bank","debit":200000000,"credit":0,"currency":"IDR","description":"Payment received"},
+    {"id":"jl_005","journalId":"je_002","accountId":"acc_002","accountCode":"1200","accountName":"Accounts Receivable","debit":0,"credit":200000000,"currency":"IDR","customerId":"cust_001","customerName":"PT Properti Prima","description":"Payment allocation"},
+    {"id":"jl_006","journalId":"je_003","accountId":"acc_010","accountCode":"5300","accountName":"Reimbursement Expenses","debit":750000,"credit":0,"currency":"IDR","description":"Office supplies reimbursement"},
+    {"id":"jl_007","journalId":"je_003","accountId":"acc_001","accountCode":"1100","accountName":"Cash and Bank","debit":0,"credit":750000,"currency":"IDR","description":"Reimbursement payment"}
+  ],
+  "purchaseBudgets": [
+    {"id":"pb_001","periodMonth":8,"periodYear":2025,"projectId":"proj_001","projectName":"Lobby Renovation Project","categoryId":"cat_marble","categoryName":"Marble","budgetAmount":400000000,"actualAmount":350000000,"variance":-50000000,"variancePct":-12.5,"currency":"IDR"},
+    {"id":"pb_002","periodMonth":8,"periodYear":2025,"projectId":"proj_002","projectName":"Restaurant Flooring","categoryId":"cat_ceramic","categoryName":"Ceramic","budgetAmount":150000000,"actualAmount":180000000,"variance":30000000,"variancePct":20,"currency":"IDR"},
+    {"id":"pb_003","periodMonth":9,"periodYear":2025,"projectId":"proj_001","projectName":"Lobby Renovation Project","categoryId":"cat_marble","categoryName":"Marble","budgetAmount":300000000,"actualAmount":120000000,"variance":-180000000,"variancePct":-60,"currency":"IDR"}
+  ],
+  "whatsappMessages": [
+    {"id":"wa_001","template":"invoice_send","toPhone":"+6281234567890","payloadJson":"{\"invoiceCode\":\"SINV-2025-001\",\"customerName\":\"PT Properti Prima\",\"amount\":\"675000000\",\"dueDate\":\"2025-09-14\",\"pdfUrl\":\"/invoices/SINV-2025-001.pdf\"}","sentAt":"2025-08-15T14:30:00Z","status":"SENT"},
+    {"id":"wa_002","template":"invoice_send","toPhone":"+6281234567891","payloadJson":"{\"invoiceCode\":\"SINV-2025-002\",\"customerName\":\"Hotel Grandis\",\"amount\":\"360000000\",\"dueDate\":\"2025-10-09\",\"pdfUrl\":\"/invoices/SINV-2025-002.pdf\"}","sentAt":"2025-08-25T16:00:00Z","status":"SENT"},
+    {"id":"wa_003","template":"invoice_overdue","toPhone":"+6281234567890","payloadJson":"{\"invoiceCode\":\"SINV-2025-003\",\"customerName\":\"PT Properti Prima\",\"amount\":\"400000000\",\"overdueDays\":\"52\"}","sentAt":"2025-09-01T09:00:00Z","status":"DELIVERED"}
+  ],
+  "auditLogs": [
+    {"id":"log_001","entity":"SalesInvoice","entityId":"sinv_001","action":"CREATE","actorId":"emp_finance","actorName":"Finance Manager","diff":{"status":"DRAFT"},"timestamp":"2025-08-15T10:00:00Z"},
+    {"id":"log_002","entity":"SalesInvoice","entityId":"sinv_001","action":"STATUS_CHANGE","actorId":"emp_finance","actorName":"Finance Manager","diff":{"status":{"from":"DRAFT","to":"ISSUED"}},"timestamp":"2025-08-15T10:05:00Z"},
+    {"id":"log_003","entity":"Payment","entityId":"pay_002","action":"CREATE","actorId":"emp_finance","actorName":"Finance Manager","diff":{"amount":200000000,"status":"VERIFIED"},"timestamp":"2025-08-20T08:00:00Z"},
+    {"id":"log_004","entity":"Reimbursement","entityId":"reimb_001","action":"APPROVAL","actorId":"emp_finance","actorName":"Finance Manager","diff":{"status":{"from":"SUBMITTED","to":"APPROVED"}},"timestamp":"2025-08-29T09:00:00Z"}
   ]
 }

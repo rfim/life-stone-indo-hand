@@ -24,6 +24,32 @@ import {
   WarehouseKpis,
   WarehouseFilterParams
 } from './warehouse-types'
+import {
+  CustomerSummary,
+  ProjectSummary,
+  SalesOrderSummary,
+  SalesInvoiceSummary,
+  PaymentRequestSummary,
+  PaymentSummary,
+  PaymentAllocation,
+  ReimbursementSummary,
+  ChartOfAccountSummary,
+  JournalEntrySummary,
+  JournalLine,
+  PurchaseBudgetSummary,
+  FinancialKpis,
+  FinanceChartData,
+  FinanceFilterParams,
+  ProfitLossReport,
+  BalanceSheetReport,
+  WhatsAppMessage,
+  AuditLog,
+  InventoryAnalytics,
+  ReimbursementSummary,
+  JournalEntrySummary,
+  JournalLine,
+  ChartOfAccountSummary
+} from './finance-types'
 import seedData from './seeds.json'
 
 class MockDataProvider {
@@ -44,6 +70,22 @@ class MockDataProvider {
   private stockCards: StockCardRow[] = []
   private siks: SIK[] = []
   private inboundRequests: InboundRequest[] = []
+  
+  // Finance data
+  private customers: CustomerSummary[] = []
+  private projects: ProjectSummary[] = []
+  private salesOrders: SalesOrderSummary[] = []
+  private salesInvoices: SalesInvoiceSummary[] = []
+  private paymentRequests: PaymentRequestSummary[] = []
+  private payments: PaymentSummary[] = []
+  private paymentAllocations: PaymentAllocation[] = []
+  private reimbursements: ReimbursementSummary[] = []
+  private chartOfAccounts: ChartOfAccountSummary[] = []
+  private journalEntries: JournalEntrySummary[] = []
+  private journalLines: JournalLine[] = []
+  private purchaseBudgets: PurchaseBudgetSummary[] = []
+  private whatsappMessages: WhatsAppMessage[] = []
+  private auditLogs: AuditLog[] = []
 
   constructor() {
     this.loadSeedData()
@@ -67,6 +109,22 @@ class MockDataProvider {
     this.stockCards = (seedData as any).stockCards as StockCardRow[]
     this.siks = (seedData as any).siks as SIK[]
     this.inboundRequests = (seedData as any).inboundRequests as InboundRequest[]
+    
+    // Load finance data
+    this.customers = (seedData as any).customers as CustomerSummary[]
+    this.projects = (seedData as any).projects as ProjectSummary[]
+    this.salesOrders = (seedData as any).salesOrders as SalesOrderSummary[]
+    this.salesInvoices = (seedData as any).salesInvoices as SalesInvoiceSummary[]
+    this.paymentRequests = (seedData as any).paymentRequests as PaymentRequestSummary[]
+    this.payments = (seedData as any).payments as PaymentSummary[]
+    this.paymentAllocations = (seedData as any).paymentAllocations as PaymentAllocation[]
+    this.reimbursements = (seedData as any).reimbursements as ReimbursementSummary[]
+    this.chartOfAccounts = (seedData as any).chartOfAccounts as ChartOfAccountSummary[]
+    this.journalEntries = (seedData as any).journalEntries as JournalEntrySummary[]
+    this.journalLines = (seedData as any).journalLines as JournalLine[]
+    this.purchaseBudgets = (seedData as any).purchaseBudgets as PurchaseBudgetSummary[]
+    this.whatsappMessages = (seedData as any).whatsappMessages as WhatsAppMessage[]
+    this.auditLogs = (seedData as any).auditLogs as AuditLog[]
   }
 
   private filterByDateRange(data: any[], params: FilterParams, dateField: string) {
@@ -524,6 +582,465 @@ class MockDataProvider {
     }
   }
 
+  // Finance Management Methods
+  
+  // Helper method to apply finance filters
+  private applyFinanceFilters(data: any[], params: FinanceFilterParams, config: {
+    dateField: string
+    customerField?: string
+    projectField?: string
+    searchFields: string[]
+  }) {
+    let filtered = data
+
+    // Apply date range filter
+    if (params.from && params.to) {
+      filtered = this.filterByDateRange(filtered, { from: params.from, to: params.to } as FilterParams, config.dateField)
+    }
+    
+    // Apply customer filter
+    if (params.customerIds?.length && config.customerField) {
+      filtered = filtered.filter(item => params.customerIds!.includes(item[config.customerField!]))
+    }
+    
+    // Apply project filter
+    if (params.projectIds?.length && config.projectField) {
+      filtered = filtered.filter(item => params.projectIds!.includes(item[config.projectField!]))
+    }
+    
+    // Apply currency filter
+    if (params.currency) {
+      filtered = filtered.filter(item => item.currency === params.currency)
+    }
+    
+    // Apply status filter
+    if (params.status) {
+      filtered = filtered.filter(item => item.status === params.status)
+    }
+    
+    // Apply search filter
+    if (params.q) {
+      filtered = this.filterBySearch(filtered, { q: params.q } as FilterParams, config.searchFields)
+    }
+
+    return filtered
+  }
+
+  async getCustomers(params: FinanceFilterParams = {}): Promise<CustomerSummary[]> {
+    let filtered = this.customers
+    
+    if (params.q) {
+      const query = params.q.toLowerCase()
+      filtered = filtered.filter(cust => 
+        cust.name.toLowerCase().includes(query) ||
+        cust.email?.toLowerCase().includes(query) ||
+        cust.phone?.toLowerCase().includes(query)
+      )
+    }
+    
+    return filtered
+  }
+
+  async getProjects(params: FinanceFilterParams = {}): Promise<ProjectSummary[]> {
+    return this.applyFinanceFilters(this.projects, params, {
+      dateField: 'createdAt',
+      customerField: 'customerId',
+      searchFields: ['code', 'name', 'customerName']
+    })
+  }
+
+  async getSalesOrders(params: FinanceFilterParams = {}): Promise<SalesOrderSummary[]> {
+    return this.applyFinanceFilters(this.salesOrders, params, {
+      dateField: 'createdAt',
+      customerField: 'customerId',
+      projectField: 'projectId',
+      searchFields: ['code', 'customerName', 'projectName']
+    })
+  }
+
+  async getSalesInvoices(params: FinanceFilterParams = {}): Promise<SalesInvoiceSummary[]> {
+    let filtered = this.applyFinanceFilters(this.salesInvoices, params, {
+      dateField: 'issueDate',
+      customerField: 'customerId',
+      projectField: 'projectId',
+      searchFields: ['code', 'customerName', 'projectName']
+    })
+    
+    // Calculate aging days for each invoice
+    const now = new Date()
+    filtered = filtered.map(inv => ({
+      ...inv,
+      agingDays: differenceInDays(now, new Date(inv.dueDate))
+    }))
+    
+    return filtered
+  }
+
+  async getPaymentRequests(params: FinanceFilterParams = {}): Promise<PaymentRequestSummary[]> {
+    return this.applyFinanceFilters(this.paymentRequests, params, {
+      dateField: 'requestedAt',
+      searchFields: ['sourceCode', 'requestedBy']
+    })
+  }
+
+  async getPayments(params: FinanceFilterParams = {}): Promise<PaymentSummary[]> {
+    return this.applyFinanceFilters(this.payments, params, {
+      dateField: 'createdAt',
+      searchFields: ['sourceCode', 'note']
+    })
+  }
+
+  async getReimbursements(params: FinanceFilterParams = {}): Promise<ReimbursementSummary[]> {
+    return this.applyFinanceFilters(this.reimbursements, params, {
+      dateField: 'createdAt',
+      projectField: 'projectId',
+      searchFields: ['code', 'requesterName', 'description']
+    })
+  }
+
+  async getChartOfAccounts(params: FinanceFilterParams = {}): Promise<ChartOfAccountSummary[]> {
+    let filtered = this.chartOfAccounts
+    
+    if (params.q) {
+      const query = params.q.toLowerCase()
+      filtered = filtered.filter(acc => 
+        acc.code.toLowerCase().includes(query) ||
+        acc.name.toLowerCase().includes(query)
+      )
+    }
+    
+    if (params.accountIds?.length) {
+      filtered = filtered.filter(acc => params.accountIds!.includes(acc.id))
+    }
+    
+    return filtered
+  }
+
+  async getJournalEntries(params: FinanceFilterParams = {}): Promise<JournalEntrySummary[]> {
+    return this.applyFinanceFilters(this.journalEntries, params, {
+      dateField: 'journalDate',
+      searchFields: ['code', 'memo', 'createdBy']
+    })
+  }
+
+  async getJournalLines(journalId: string): Promise<JournalLine[]> {
+    return this.journalLines.filter(line => line.journalId === journalId)
+  }
+
+  async getPurchaseBudgets(params: FinanceFilterParams = {}): Promise<PurchaseBudgetSummary[]> {
+    let filtered = this.purchaseBudgets
+    
+    if (params.projectIds?.length) {
+      filtered = filtered.filter(budget => 
+        !budget.projectId || params.projectIds!.includes(budget.projectId)
+      )
+    }
+    
+    if (params.categoryIds?.length) {
+      filtered = filtered.filter(budget => 
+        !budget.categoryId || params.categoryIds!.includes(budget.categoryId)
+      )
+    }
+    
+    return filtered
+  }
+
+  async getFinancialKpis(params: FinanceFilterParams): Promise<FinancialKpis> {
+    const salesInvoices = await this.getSalesInvoices(params)
+    const payments = await this.getPayments(params)
+    const reimbursements = await this.getReimbursements(params)
+    const accounts = await this.getChartOfAccounts()
+    
+    // Get previous period for delta calculation
+    const fromDate = new Date(params.from)
+    const toDate = new Date(params.to)
+    const duration = differenceInDays(toDate, fromDate)
+    const prevTo = subDays(fromDate, 1)
+    const prevFrom = subDays(prevTo, duration)
+    
+    const prevParams = {
+      ...params,
+      from: format(prevFrom, 'yyyy-MM-dd'),
+      to: format(prevTo, 'yyyy-MM-dd')
+    }
+    
+    const prevSalesInvoices = await this.getSalesInvoices(prevParams)
+    
+    // Calculate key metrics
+    const totalRevenue = salesInvoices.reduce((sum, inv) => sum + inv.total, 0)
+    const prevTotalRevenue = prevSalesInvoices.reduce((sum, inv) => sum + inv.total, 0)
+    const revenueGrowth = prevTotalRevenue ? ((totalRevenue - prevTotalRevenue) / prevTotalRevenue) * 100 : 0
+    
+    const totalAR = salesInvoices.reduce((sum, inv) => sum + inv.remainingAmount, 0)
+    const totalAP = 100200000 // From seed data, could be calculated from PO invoices
+    
+    // Financial ratios (simplified calculations)
+    const currentAssets = 125000000 + totalAR + 450000000 // Cash + AR + Inventory
+    const currentLiabilities = totalAP + 74175000 // AP + VAT Payable
+    const currentRatio = currentLiabilities ? currentAssets / currentLiabilities : 0
+    
+    const quickAssets = 125000000 + totalAR // Cash + AR (no inventory)
+    const quickRatio = currentLiabilities ? quickAssets / currentLiabilities : 0
+    
+    const cashRatio = currentLiabilities ? 125000000 / currentLiabilities : 0
+    
+    // Operational metrics
+    const invoicesOverdue = salesInvoices.filter(inv => 
+      inv.status === 'OVERDUE' || (inv.agingDays && inv.agingDays > 0 && inv.remainingAmount > 0)
+    )
+    
+    const paymentsApproved = payments.filter(pay => pay.status === 'VERIFIED' || pay.status === 'POSTED')
+    const reimbursementsPending = reimbursements.filter(reimb => 
+      reimb.status === 'SUBMITTED' || reimb.status === 'APPROVED'
+    )
+
+    return {
+      // Financial Health Ratios
+      currentRatio: Math.round(currentRatio * 100) / 100,
+      quickRatio: Math.round(quickRatio * 100) / 100,
+      cashRatio: Math.round(cashRatio * 100) / 100,
+      grossMarginPct: 40, // Simplified calculation
+      netMarginPct: 25, // Simplified calculation
+      dso: 35, // Days Sales Outstanding - simplified
+      dpo: 30, // Days Payable Outstanding - simplified
+      inventoryTurnover: 6.5, // Simplified calculation
+      
+      // Key Metrics with deltas
+      totalRevenue: { value: totalRevenue, delta: revenueGrowth },
+      totalExpenses: { value: 1109500000, delta: -5.2 }, // From seed data
+      netIncome: { value: totalRevenue - 1109500000, delta: 15.8 },
+      totalAR: { value: totalAR, delta: 12.3 },
+      totalAP: { value: totalAP, delta: -8.7 },
+      cashBalance: { value: 125000000, delta: 22.1 },
+      
+      // Operational Metrics
+      invoicesIssued: { count: salesInvoices.length, value: totalRevenue },
+      invoicesOverdue: { count: invoicesOverdue.length, value: invoicesOverdue.reduce((sum, inv) => sum + inv.remainingAmount, 0) },
+      paymentsApproved: { count: paymentsApproved.length, value: paymentsApproved.reduce((sum, pay) => sum + pay.amount, 0) },
+      reimbursementsPending: { count: reimbursementsPending.length, value: reimbursementsPending.reduce((sum, reimb) => sum + reimb.amount, 0) }
+    }
+  }
+
+  async getFinanceChartData(params: FinanceFilterParams): Promise<FinanceChartData> {
+    const salesInvoices = await this.getSalesInvoices(params)
+    const payments = await this.getPayments(params)
+    const accounts = await this.getChartOfAccounts()
+    
+    // Sales trend (daily aggregation)
+    const salesTrend = salesInvoices.reduce((acc, inv) => {
+      const date = format(new Date(inv.issueDate), 'yyyy-MM-dd')
+      acc[date] = (acc[date] || 0) + inv.total
+      return acc
+    }, {} as Record<string, number>)
+    
+    const salesTrendData = Object.entries(salesTrend).map(([date, sales]) => ({
+      date,
+      sales,
+      previousPeriod: sales * 0.85 // Simulated previous period data
+    }))
+    
+    // Cash flow (simplified)
+    const cashFlow = payments.map(pay => ({
+      date: format(new Date(pay.createdAt), 'yyyy-MM-dd'),
+      inflows: pay.sourceType === 'INVOICE' ? pay.amount : 0,
+      outflows: pay.sourceType !== 'INVOICE' ? pay.amount : 0,
+      netCash: pay.sourceType === 'INVOICE' ? pay.amount : -pay.amount
+    }))
+    
+    // AR Aging
+    const arAging = [
+      { bucket: '0-30 days', amount: salesInvoices.filter(inv => (inv.agingDays || 0) <= 30).reduce((sum, inv) => sum + inv.remainingAmount, 0), count: salesInvoices.filter(inv => (inv.agingDays || 0) <= 30).length },
+      { bucket: '31-60 days', amount: salesInvoices.filter(inv => (inv.agingDays || 0) > 30 && (inv.agingDays || 0) <= 60).reduce((sum, inv) => sum + inv.remainingAmount, 0), count: salesInvoices.filter(inv => (inv.agingDays || 0) > 30 && (inv.agingDays || 0) <= 60).length },
+      { bucket: '61-90 days', amount: salesInvoices.filter(inv => (inv.agingDays || 0) > 60 && (inv.agingDays || 0) <= 90).reduce((sum, inv) => sum + inv.remainingAmount, 0), count: salesInvoices.filter(inv => (inv.agingDays || 0) > 60 && (inv.agingDays || 0) <= 90).length },
+      { bucket: '90+ days', amount: salesInvoices.filter(inv => (inv.agingDays || 0) > 90).reduce((sum, inv) => sum + inv.remainingAmount, 0), count: salesInvoices.filter(inv => (inv.agingDays || 0) > 90).length }
+    ]
+    
+    // Currency exposure
+    const currencyTotals = salesInvoices.reduce((acc, inv) => {
+      acc[inv.currency] = (acc[inv.currency] || 0) + inv.remainingAmount
+      return acc
+    }, {} as Record<string, number>)
+    
+    const totalExposure = Object.values(currencyTotals).reduce((sum, amount) => sum + amount, 0)
+    const currencyExposure = Object.entries(currencyTotals).map(([currency, amount]) => ({
+      currency: currency as any,
+      amount,
+      percentage: totalExposure ? (amount / totalExposure) * 100 : 0
+    }))
+    
+    // Category breakdown (simplified)
+    const categoryBreakdown = [
+      { category: 'Sales Revenue', amount: 1535000000, percentage: 58.5, type: 'REVENUE' as const },
+      { category: 'Cost of Goods Sold', amount: 920000000, percentage: 35.1, type: 'EXPENSE' as const },
+      { category: 'Operating Expenses', amount: 185000000, percentage: 7.1, type: 'EXPENSE' as const },
+      { category: 'Reimbursements', amount: 4500000, percentage: 0.2, type: 'EXPENSE' as const }
+    ]
+
+    return {
+      salesTrend: salesTrendData,
+      cashFlow,
+      arAging,
+      currencyExposure,
+      categoryBreakdown
+    }
+  }
+
+  async getProfitLossReport(params: FinanceFilterParams): Promise<ProfitLossReport> {
+    const accounts = await this.getChartOfAccounts()
+    const revenueAccounts = accounts.filter(acc => acc.type === 'REVENUE' && acc.isProfitLoss)
+    const expenseAccounts = accounts.filter(acc => acc.type === 'EXPENSE' && acc.isProfitLoss)
+    
+    // Simplified P&L calculation using account balances
+    const revenue = revenueAccounts.map(acc => ({
+      accountId: acc.id,
+      accountCode: acc.code,
+      accountName: acc.name,
+      currentPeriod: acc.balance || 0,
+      comparisonPeriod: (acc.balance || 0) * 0.85, // Simulated comparison
+      variance: (acc.balance || 0) * 0.15,
+      variancePct: 15
+    }))
+    
+    const expenses = expenseAccounts.map(acc => ({
+      accountId: acc.id,
+      accountCode: acc.code,
+      accountName: acc.name,
+      currentPeriod: acc.balance || 0,
+      comparisonPeriod: (acc.balance || 0) * 1.1, // Simulated comparison
+      variance: -(acc.balance || 0) * 0.1,
+      variancePct: -10
+    }))
+    
+    const totalRevenue = revenue.reduce((sum, acc) => sum + acc.currentPeriod, 0)
+    const totalExpenses = expenses.reduce((sum, acc) => sum + acc.currentPeriod, 0)
+    const grossProfit = totalRevenue - totalExpenses
+    const netIncome = grossProfit // Simplified
+    
+    return {
+      periodFrom: params.from,
+      periodTo: params.to,
+      currency: params.currency || 'IDR',
+      revenue,
+      expenses,
+      totalRevenue,
+      totalExpenses,
+      grossProfit,
+      netIncome,
+      grossMarginPct: totalRevenue ? (grossProfit / totalRevenue) * 100 : 0,
+      netMarginPct: totalRevenue ? (netIncome / totalRevenue) * 100 : 0
+    }
+  }
+
+  async getBalanceSheetReport(params: { asOfDate: string; currency?: string }): Promise<BalanceSheetReport> {
+    const accounts = await this.getChartOfAccounts()
+    const assetAccounts = accounts.filter(acc => acc.type === 'ASSET')
+    const liabilityAccounts = accounts.filter(acc => acc.type === 'LIABILITY')
+    const equityAccounts = accounts.filter(acc => acc.type === 'EQUITY')
+    
+    const assets = assetAccounts.map(acc => ({
+      accountId: acc.id,
+      accountCode: acc.code,
+      accountName: acc.name,
+      currentBalance: acc.balance || 0,
+      comparisonBalance: (acc.balance || 0) * 0.9,
+      variance: (acc.balance || 0) * 0.1,
+      variancePct: 10
+    }))
+    
+    const liabilities = liabilityAccounts.map(acc => ({
+      accountId: acc.id,
+      accountCode: acc.code,
+      accountName: acc.name,
+      currentBalance: acc.balance || 0,
+      comparisonBalance: (acc.balance || 0) * 1.05,
+      variance: -(acc.balance || 0) * 0.05,
+      variancePct: -5
+    }))
+    
+    const equity = equityAccounts.map(acc => ({
+      accountId: acc.id,
+      accountCode: acc.code,
+      accountName: acc.name,
+      currentBalance: acc.balance || 0,
+      comparisonBalance: (acc.balance || 0) * 0.95,
+      variance: (acc.balance || 0) * 0.05,
+      variancePct: 5
+    }))
+    
+    return {
+      asOfDate: params.asOfDate,
+      currency: params.currency || 'IDR',
+      assets,
+      liabilities,
+      equity,
+      totalAssets: assets.reduce((sum, acc) => sum + acc.currentBalance, 0),
+      totalLiabilities: liabilities.reduce((sum, acc) => sum + acc.currentBalance, 0),
+      totalEquity: equity.reduce((sum, acc) => sum + acc.currentBalance, 0)
+    }
+  }
+
+  async getWhatsAppMessages(params: FinanceFilterParams = {}): Promise<WhatsAppMessage[]> {
+    let filtered = this.whatsappMessages
+    
+    if (params.q) {
+      const query = params.q.toLowerCase()
+      filtered = filtered.filter(msg => 
+        msg.template.toLowerCase().includes(query) ||
+        msg.toPhone.includes(query)
+      )
+    }
+    
+    return filtered
+  }
+
+  async getAuditLogs(params: FinanceFilterParams = {}): Promise<AuditLog[]> {
+    let filtered = this.auditLogs
+    
+    if (params.q) {
+      const query = params.q.toLowerCase()
+      filtered = filtered.filter(log => 
+        log.entity.toLowerCase().includes(query) ||
+        log.action.toLowerCase().includes(query) ||
+        log.actorName.toLowerCase().includes(query)
+      )
+    }
+    
+    return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  }
+
+  // WhatsApp Integration (stub)
+  async sendWhatsAppMessage(template: string, toPhone: string, payload: any): Promise<WhatsAppMessage> {
+    const message: WhatsAppMessage = {
+      id: `wa_${Date.now()}`,
+      template,
+      toPhone,
+      payloadJson: JSON.stringify(payload),
+      sentAt: new Date().toISOString(),
+      status: 'SENT'
+    }
+    
+    this.whatsappMessages.push(message)
+    console.log('WhatsApp message sent (stub):', message)
+    
+    return message
+  }
+
+  // Audit logging
+  async logAudit(entity: string, entityId: string, action: string, actorId: string, actorName: string, diff?: any): Promise<void> {
+    const log: AuditLog = {
+      id: `log_${Date.now()}`,
+      entity,
+      entityId,
+      action: action as any,
+      actorId,
+      actorName,
+      diff,
+      timestamp: new Date().toISOString()
+    }
+    
+    this.auditLogs.push(log)
+  }
+
   // Export functionality
   exportToCSV(data: any[], filename: string): void {
     const headers = Object.keys(data[0] || {})
@@ -545,6 +1062,228 @@ class MockDataProvider {
     // Simplified PDF export - in a real app you'd use a library like jsPDF
     console.log('PDF export not implemented in mock - would export:', { data, filename })
     alert('PDF export would be implemented with a library like jsPDF')
+  }
+
+  // Payment Management Methods
+  async getPaymentStats(params: FinanceFilterParams = {}): Promise<any> {
+    const payments = await this.getPayments(params)
+    
+    const totalPayments = payments.length
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+    const pendingPayments = payments.filter(p => p.status === 'PENDING')
+    const verifiedPayments = payments.filter(p => p.status === 'VERIFIED')
+    const postedPayments = payments.filter(p => p.status === 'POSTED')
+    
+    return {
+      totalPayments,
+      totalAmount,
+      pendingCount: pendingPayments.length,
+      pendingAmount: pendingPayments.reduce((sum, p) => sum + p.amount, 0),
+      verifiedCount: verifiedPayments.length,
+      verifiedAmount: verifiedPayments.reduce((sum, p) => sum + p.amount, 0),
+      postedCount: postedPayments.length,
+      postedAmount: postedPayments.reduce((sum, p) => sum + p.amount, 0)
+    }
+  }
+
+  async uploadPaymentProof(paymentId: string, formData: FormData): Promise<void> {
+    const payment = this.payments.find(p => p.id === paymentId)
+    if (payment) {
+      payment.proofUrl = `/uploads/payment-proof-${paymentId}.pdf`
+      payment.status = 'VERIFIED'
+      payment.verifiedBy = 'current_user'
+      await this.logAudit('payment', paymentId, 'PROOF_UPLOADED', 'current_user', 'Current User')
+    }
+  }
+
+  async updatePaymentStatus(paymentId: string, status: any, notes?: string): Promise<void> {
+    const payment = this.payments.find(p => p.id === paymentId)
+    if (payment) {
+      const oldStatus = payment.status
+      payment.status = status
+      payment.note = notes
+      if (status === 'VERIFIED') {
+        payment.verifiedBy = 'current_user'
+      }
+      await this.logAudit('payment', paymentId, 'STATUS_CHANGE', 'current_user', 'Current User', {
+        oldStatus,
+        newStatus: status,
+        notes
+      })
+    }
+  }
+
+  // Reimbursement Management Methods
+  async getReimbursementStats(params: FinanceFilterParams = {}): Promise<any> {
+    const reimbursements = await this.getReimbursements(params)
+    
+    const totalReimbursements = reimbursements.length
+    const totalAmount = reimbursements.reduce((sum, r) => sum + r.amount, 0)
+    const pendingReimbursements = reimbursements.filter(r => r.status === 'SUBMITTED')
+    const approvedReimbursements = reimbursements.filter(r => r.status === 'APPROVED')
+    const paidReimbursements = reimbursements.filter(r => r.status === 'PAID')
+    
+    return {
+      totalReimbursements,
+      totalAmount,
+      pendingCount: pendingReimbursements.length,
+      pendingAmount: pendingReimbursements.reduce((sum, r) => sum + r.amount, 0),
+      approvedCount: approvedReimbursements.length,
+      approvedAmount: approvedReimbursements.reduce((sum, r) => sum + r.amount, 0),
+      paidCount: paidReimbursements.length,
+      paidAmount: paidReimbursements.reduce((sum, r) => sum + r.amount, 0)
+    }
+  }
+
+  async createReimbursement(data: any): Promise<ReimbursementSummary> {
+    const reimbursement: ReimbursementSummary = {
+      id: `reimb_${Date.now()}`,
+      code: `REIMB-${format(new Date(), 'yyyy-MM')}-${String(this.reimbursements.length + 1).padStart(3, '0')}`,
+      requesterId: data.requesterId,
+      requesterName: data.requesterId, // In real app, would lookup name
+      projectId: data.projectId,
+      projectName: data.projectId ? `Project ${data.projectId}` : undefined,
+      category: data.category,
+      amount: data.amount,
+      currency: data.currency,
+      status: data.status,
+      description: data.description,
+      receiptsCount: data.receipts?.length || 0,
+      createdAt: new Date().toISOString()
+    }
+    
+    this.reimbursements.push(reimbursement)
+    await this.logAudit('reimbursement', reimbursement.id, 'CREATE', 'current_user', 'Current User')
+    
+    return reimbursement
+  }
+
+  async updateReimbursementStatus(reimbursementId: string, status: any, notes?: string): Promise<void> {
+    const reimbursement = this.reimbursements.find(r => r.id === reimbursementId)
+    if (reimbursement) {
+      const oldStatus = reimbursement.status
+      reimbursement.status = status
+      
+      if (status === 'SUBMITTED') {
+        reimbursement.submittedAt = new Date().toISOString()
+      } else if (status === 'APPROVED') {
+        reimbursement.approvedBy = 'current_user'
+        reimbursement.approvedAt = new Date().toISOString()
+      } else if (status === 'PAID') {
+        reimbursement.paidAt = new Date().toISOString()
+      } else if (status === 'POSTED') {
+        reimbursement.postedAt = new Date().toISOString()
+      }
+      
+      await this.logAudit('reimbursement', reimbursementId, 'STATUS_CHANGE', 'current_user', 'Current User', {
+        oldStatus,
+        newStatus: status,
+        notes
+      })
+    }
+  }
+
+  // Journal Management Methods
+  async getJournalStats(params: FinanceFilterParams = {}): Promise<any> {
+    const journals = await this.getJournalEntries(params)
+    
+    const totalEntries = journals.length
+    const draftEntries = journals.filter(j => j.status === 'DRAFT').length
+    const postedEntries = journals.filter(j => j.status === 'POSTED').length
+    const totalAmount = journals.reduce((sum, j) => sum + (j.totalAmount || j.totalDebit || 0), 0)
+    
+    return {
+      totalEntries,
+      totalAmount,
+      draftEntries,
+      postedEntries
+    }
+  }
+
+  async createJournalEntry(data: any): Promise<JournalEntrySummary> {
+    const journal: JournalEntrySummary = {
+      id: `je_${Date.now()}`,
+      code: data.code || `JE-${format(new Date(), 'yyyy-MM')}-${String(this.journalEntries.length + 1).padStart(3, '0')}`,
+      memo: data.memo,
+      status: 'DRAFT',
+      journalDate: format(data.journalDate || new Date(), 'yyyy-MM-dd'),
+      totalDebit: data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0),
+      totalCredit: data.lines.reduce((sum: number, line: any) => sum + (line.credit || 0), 0),
+      totalAmount: data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0),
+      createdBy: 'current_user',
+      createdAt: new Date().toISOString()
+    }
+    
+    this.journalEntries.push(journal)
+    
+    // Create journal lines
+    data.lines.forEach((lineData: any) => {
+      const line: JournalLine = {
+        id: `jl_${Date.now()}_${Math.random()}`,
+        journalId: journal.id,
+        accountId: lineData.accountId,
+        accountCode: '',
+        accountName: lineData.accountName || '',
+        debit: lineData.debit || 0,
+        credit: lineData.credit || 0,
+        currency: 'IDR',
+        customerId: lineData.customerId,
+        projectId: lineData.projectId,
+        categoryId: lineData.categoryId,
+        description: lineData.description
+      }
+      this.journalLines.push(line)
+    })
+    
+    await this.logAudit('journal_entry', journal.id, 'CREATE', 'current_user', 'Current User')
+    
+    return journal
+  }
+
+  async postJournalEntry(journalId: string): Promise<void> {
+    const journal = this.journalEntries.find(j => j.id === journalId)
+    if (journal && journal.status === 'DRAFT') {
+      journal.status = 'POSTED'
+      journal.postedAt = new Date().toISOString()
+      journal.postedBy = 'current_user'
+      
+      await this.logAudit('journal_entry', journalId, 'POSTED', 'current_user', 'Current User')
+    }
+  }
+
+  // Account Management Methods
+  async createAccount(data: any): Promise<ChartOfAccountSummary> {
+    const account: ChartOfAccountSummary = {
+      id: `acc_${Date.now()}`,
+      code: data.code,
+      name: data.name,
+      type: data.type,
+      isProfitLoss: data.isProfitLoss,
+      parentId: data.parentId || undefined,
+      allowPosting: data.allowPosting,
+      currency: data.currency,
+      isActive: true,
+      balance: 0,
+      description: data.description
+    }
+    
+    this.chartOfAccounts.push(account)
+    await this.logAudit('chart_of_accounts', account.id, 'CREATE', 'current_user', 'Current User')
+    
+    return account
+  }
+
+  async updateAccount(accountId: string, data: any): Promise<void> {
+    const account = this.chartOfAccounts.find(a => a.id === accountId)
+    if (account) {
+      const oldData = { ...account }
+      Object.assign(account, data)
+      
+      await this.logAudit('chart_of_accounts', accountId, 'UPDATE', 'current_user', 'Current User', {
+        oldData,
+        newData: data
+      })
+    }
   }
 }
 
