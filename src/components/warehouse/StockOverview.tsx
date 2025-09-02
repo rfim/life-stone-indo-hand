@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +23,8 @@ import { KpiTile } from '@/components/purchasing/KpiTile'
 import { ChartArea } from '@/components/purchasing/ChartArea'
 import { ChartBar } from '@/components/purchasing/ChartBar'
 import { ChartDonut } from '@/components/purchasing/ChartDonut'
-import { DataTable } from '@/components/purchasing/DataTable'
+import { DataListView, ViewMode } from '@/components/ui/data-list-view'
+import { InventoryCard } from '@/components/warehouse/cards'
 
 interface StockOverviewProps {
   filterParams: WarehouseFilterParams
@@ -31,6 +32,7 @@ interface StockOverviewProps {
 
 export function StockOverview({ filterParams }: StockOverviewProps) {
   const navigate = useNavigate()
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
   
   // Data queries
   const { data: kpis, isLoading: kpisLoading } = useWarehouseKpis(filterParams)
@@ -180,6 +182,11 @@ export function StockOverview({ filterParams }: StockOverviewProps) {
     }
   }
 
+  // Card renderer for inventory
+  const renderInventoryCard = (item: InventorySummary, index: number) => (
+    <InventoryCard inventory={item} index={index} />
+  )
+
   if (kpisLoading || inventoryLoading) {
     return <div className="p-6">Loading...</div>
   }
@@ -256,12 +263,16 @@ export function StockOverview({ filterParams }: StockOverviewProps) {
       </div>
 
       {/* Inventory Table */}
-      <DataTable
+      <DataListView
         title="Current Inventory"
         data={inventory}
         columns={inventoryColumns}
         searchPlaceholder="Search inventory..."
         onExport={(format) => handleExport(inventory, 'warehouse-inventory', format)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        cardRenderer={renderInventoryCard}
+        defaultViewMode="table"
       />
     </div>
   )

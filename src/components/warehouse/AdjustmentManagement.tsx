@@ -21,7 +21,8 @@ import {
 } from '@/data/warehouse-types'
 import { useAdjustments } from '@/hooks/warehouse/useWarehouseQueries'
 import { mockDataProvider } from '@/data/mockProvider'
-import { DataTable } from '@/components/purchasing/DataTable'
+import { DataListView, ViewMode } from '@/components/ui/data-list-view'
+import { AdjustmentCard } from '@/components/warehouse/cards'
 
 interface AdjustmentManagementProps {
   filterParams: WarehouseFilterParams
@@ -107,6 +108,7 @@ const formatAdjustmentType = (type: AdjustmentType) => {
 export function AdjustmentManagement({ filterParams }: AdjustmentManagementProps) {
   const navigate = useNavigate()
   const [selectedType, setSelectedType] = useState<AdjustmentType | 'ALL'>('ALL')
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
   
   // Data queries
   const { data: adjustments = [], isLoading: adjustmentsLoading } = useAdjustments(filterParams)
@@ -233,6 +235,11 @@ export function AdjustmentManagement({ filterParams }: AdjustmentManagementProps
     }
   }
 
+  // Card renderer for adjustments
+  const renderAdjustmentCard = (item: AdjustmentSummary, index: number) => (
+    <AdjustmentCard adjustment={item} index={index} />
+  )
+
   if (adjustmentsLoading) {
     return <div className="p-6">Loading adjustments...</div>
   }
@@ -272,12 +279,16 @@ export function AdjustmentManagement({ filterParams }: AdjustmentManagementProps
       </div>
 
       {/* Adjustments Table */}
-      <DataTable
+      <DataListView
         title={`Stock Adjustments (${filteredAdjustments.length})`}
         data={filteredAdjustments}
         columns={adjustmentColumns}
         searchPlaceholder="Search adjustments..."
         onExport={(format) => handleExport(filteredAdjustments, `warehouse-adjustments-${selectedType.toLowerCase()}`, format)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        cardRenderer={renderAdjustmentCard}
+        defaultViewMode="table"
       />
     </div>
   )

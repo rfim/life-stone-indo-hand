@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
@@ -15,7 +15,8 @@ import {
 import { WarehouseFilterParams, MovementSummary, MovementType } from '@/data/warehouse-types'
 import { useMovements } from '@/hooks/warehouse/useWarehouseQueries'
 import { mockDataProvider } from '@/data/mockProvider'
-import { DataTable } from '@/components/purchasing/DataTable'
+import { DataListView, ViewMode } from '@/components/ui/data-list-view'
+import { MovementCard } from '@/components/warehouse/cards'
 
 interface MovementManagementProps {
   filterParams: WarehouseFilterParams
@@ -64,6 +65,7 @@ const getStatusColor = (status: string) => {
 
 export function MovementManagement({ filterParams }: MovementManagementProps) {
   const navigate = useNavigate()
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
   
   // Data queries
   const { data: movements = [], isLoading: movementsLoading } = useMovements(filterParams)
@@ -182,6 +184,11 @@ export function MovementManagement({ filterParams }: MovementManagementProps) {
     }
   }
 
+  // Card renderer for movements
+  const renderMovementCard = (item: MovementSummary, index: number) => (
+    <MovementCard movement={item} index={index} />
+  )
+
   if (movementsLoading) {
     return <div className="p-6">Loading movements...</div>
   }
@@ -247,12 +254,16 @@ export function MovementManagement({ filterParams }: MovementManagementProps) {
       </div>
 
       {/* Movements Table */}
-      <DataTable
+      <DataListView
         title={`Stock Movements (${movements.length})`}
         data={movements}
         columns={movementColumns}
         searchPlaceholder="Search movements..."
         onExport={(format) => handleExport(movements, 'warehouse-movements', format)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        cardRenderer={renderMovementCard}
+        defaultViewMode="table"
       />
     </div>
   )
