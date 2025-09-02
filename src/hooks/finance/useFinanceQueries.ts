@@ -112,7 +112,7 @@ export function useProfitLossReport(params: FinanceFilterParams) {
     queryKey: ['finance', 'profit-loss-report', params],
     queryFn: () => mockDataProvider.getProfitLossReport(params),
     staleTime: 10 * 60 * 1000,
-    enabled: !!(params.from && params.to),
+    enabled: !!(params.dateFrom && params.dateTo),
   })
 }
 
@@ -138,5 +138,30 @@ export function useAuditLogs(params: FinanceFilterParams = {}) {
     queryKey: ['finance', 'audit-logs', params],
     queryFn: () => mockDataProvider.getAuditLogs(params),
     staleTime: 2 * 60 * 1000,
+  })
+}
+
+// Stats hooks for various modules
+export function usePaymentStats(params: FinanceFilterParams = {}) {
+  return useQuery({
+    queryKey: ['finance', 'payment-stats', params],
+    queryFn: () => mockDataProvider.getPaymentStats(params),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useReimbursementStats(params: FinanceFilterParams = {}) {
+  return useQuery({
+    queryKey: ['finance', 'reimbursement-stats', params],
+    queryFn: () => mockDataProvider.getReimbursementStats(params),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useJournalStats(params: FinanceFilterParams = {}) {
+  return useQuery({
+    queryKey: ['finance', 'journal-stats', params],
+    queryFn: () => mockDataProvider.getJournalStats(params),
+    staleTime: 5 * 60 * 1000,
   })
 }

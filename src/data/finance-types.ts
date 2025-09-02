@@ -122,9 +122,11 @@ export type PaymentSummary = {
   sourceId: string
   sourceCode: string
   requestId?: string
+  payeeId?: string
   amount: number
   currency: Currency
   status: PaymentStatus
+  description?: string
   approvedBy?: string
   verifiedBy?: string
   paidAt?: string
@@ -181,6 +183,7 @@ export type ChartOfAccountSummary = {
   currency: Currency
   isActive: boolean
   balance?: number
+  description?: string
   children?: ChartOfAccountSummary[]
 }
 
@@ -192,6 +195,7 @@ export type JournalEntrySummary = {
   journalDate: string
   totalDebit: number
   totalCredit: number
+  totalAmount?: number
   createdBy: string
   createdAt: string
   postedAt?: string
@@ -350,14 +354,21 @@ export type InventoryAnalytics = {
 
 // Filter Parameters for Finance Queries
 export type FinanceFilterParams = {
-  from: string
-  to: string
+  dateFrom?: string
+  dateTo?: string
+  compareFromDate?: string
+  compareToDate?: string
+  from?: string
+  to?: string
   customerIds?: string[]
   projectIds?: string[]
   categoryIds?: string[]
   currency?: Currency
   accountIds?: string[]
   status?: string
+  accountType?: string
+  isProfitLoss?: boolean
+  category?: string
   q?: string
 }
 
@@ -373,8 +384,8 @@ export type ProfitLossReport = {
     accountId: string
     accountCode: string
     accountName: string
-    currentPeriod: number
-    comparisonPeriod?: number
+    currentAmount: number
+    compareAmount: number
     variance?: number
     variancePct?: number
   }>
@@ -383,16 +394,19 @@ export type ProfitLossReport = {
     accountId: string
     accountCode: string
     accountName: string
-    currentPeriod: number
-    comparisonPeriod?: number
+    currentAmount: number
+    compareAmount: number
     variance?: number
     variancePct?: number
   }>
   
   totalRevenue: number
+  totalRevenueCompare: number
   totalExpenses: number
+  totalExpensesCompare: number
   grossProfit: number
   netIncome: number
+  netIncomeCompare: number
   grossMarginPct: number
   netMarginPct: number
 }
@@ -406,8 +420,8 @@ export type BalanceSheetReport = {
     accountId: string
     accountCode: string
     accountName: string
-    currentBalance: number
-    comparisonBalance?: number
+    amount: number
+    comparisonAmount?: number
     variance?: number
     variancePct?: number
   }>
@@ -416,8 +430,8 @@ export type BalanceSheetReport = {
     accountId: string
     accountCode: string
     accountName: string
-    currentBalance: number
-    comparisonBalance?: number
+    amount: number
+    comparisonAmount?: number
     variance?: number
     variancePct?: number
   }>
@@ -426,8 +440,8 @@ export type BalanceSheetReport = {
     accountId: string
     accountCode: string
     accountName: string
-    currentBalance: number
-    comparisonBalance?: number
+    amount: number
+    comparisonAmount?: number
     variance?: number
     variancePct?: number
   }>
@@ -463,3 +477,33 @@ export type AuditLog = {
 export type ExportFormat = 'csv' | 'pdf'
 export type DateWindow = '1M' | '6M' | '12M'
 export type TimeRange = '7D' | '30D' | '90D'
+
+// Stats types for various modules
+export type PaymentStats = {
+  totalPayments: number
+  totalAmount: number
+  pendingCount: number
+  pendingAmount: number
+  verifiedCount: number
+  verifiedAmount: number
+  postedCount: number
+  postedAmount: number
+}
+
+export type ReimbursementStats = {
+  totalReimbursements: number
+  totalAmount: number
+  pendingCount: number
+  pendingAmount: number
+  approvedCount: number
+  approvedAmount: number
+  paidCount: number
+  paidAmount: number
+}
+
+export type JournalStats = {
+  totalEntries: number
+  totalAmount: number
+  draftEntries: number
+  postedEntries: number
+}

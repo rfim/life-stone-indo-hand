@@ -44,7 +44,11 @@ import {
   BalanceSheetReport,
   WhatsAppMessage,
   AuditLog,
-  InventoryAnalytics
+  InventoryAnalytics,
+  ReimbursementSummary,
+  JournalEntrySummary,
+  JournalLine,
+  ChartOfAccountSummary
 } from './finance-types'
 import seedData from './seeds.json'
 
@@ -1058,6 +1062,228 @@ class MockDataProvider {
     // Simplified PDF export - in a real app you'd use a library like jsPDF
     console.log('PDF export not implemented in mock - would export:', { data, filename })
     alert('PDF export would be implemented with a library like jsPDF')
+  }
+
+  // Payment Management Methods
+  async getPaymentStats(params: FinanceFilterParams = {}): Promise<any> {
+    const payments = await this.getPayments(params)
+    
+    const totalPayments = payments.length
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+    const pendingPayments = payments.filter(p => p.status === 'PENDING')
+    const verifiedPayments = payments.filter(p => p.status === 'VERIFIED')
+    const postedPayments = payments.filter(p => p.status === 'POSTED')
+    
+    return {
+      totalPayments,
+      totalAmount,
+      pendingCount: pendingPayments.length,
+      pendingAmount: pendingPayments.reduce((sum, p) => sum + p.amount, 0),
+      verifiedCount: verifiedPayments.length,
+      verifiedAmount: verifiedPayments.reduce((sum, p) => sum + p.amount, 0),
+      postedCount: postedPayments.length,
+      postedAmount: postedPayments.reduce((sum, p) => sum + p.amount, 0)
+    }
+  }
+
+  async uploadPaymentProof(paymentId: string, formData: FormData): Promise<void> {
+    const payment = this.payments.find(p => p.id === paymentId)
+    if (payment) {
+      payment.proofUrl = `/uploads/payment-proof-${paymentId}.pdf`
+      payment.status = 'VERIFIED'
+      payment.verifiedBy = 'current_user'
+      await this.logAudit('payment', paymentId, 'PROOF_UPLOADED', 'current_user', 'Current User')
+    }
+  }
+
+  async updatePaymentStatus(paymentId: string, status: any, notes?: string): Promise<void> {
+    const payment = this.payments.find(p => p.id === paymentId)
+    if (payment) {
+      const oldStatus = payment.status
+      payment.status = status
+      payment.note = notes
+      if (status === 'VERIFIED') {
+        payment.verifiedBy = 'current_user'
+      }
+      await this.logAudit('payment', paymentId, 'STATUS_CHANGE', 'current_user', 'Current User', {
+        oldStatus,
+        newStatus: status,
+        notes
+      })
+    }
+  }
+
+  // Reimbursement Management Methods
+  async getReimbursementStats(params: FinanceFilterParams = {}): Promise<any> {
+    const reimbursements = await this.getReimbursements(params)
+    
+    const totalReimbursements = reimbursements.length
+    const totalAmount = reimbursements.reduce((sum, r) => sum + r.amount, 0)
+    const pendingReimbursements = reimbursements.filter(r => r.status === 'SUBMITTED')
+    const approvedReimbursements = reimbursements.filter(r => r.status === 'APPROVED')
+    const paidReimbursements = reimbursements.filter(r => r.status === 'PAID')
+    
+    return {
+      totalReimbursements,
+      totalAmount,
+      pendingCount: pendingReimbursements.length,
+      pendingAmount: pendingReimbursements.reduce((sum, r) => sum + r.amount, 0),
+      approvedCount: approvedReimbursements.length,
+      approvedAmount: approvedReimbursements.reduce((sum, r) => sum + r.amount, 0),
+      paidCount: paidReimbursements.length,
+      paidAmount: paidReimbursements.reduce((sum, r) => sum + r.amount, 0)
+    }
+  }
+
+  async createReimbursement(data: any): Promise<ReimbursementSummary> {
+    const reimbursement: ReimbursementSummary = {
+      id: `reimb_${Date.now()}`,
+      code: `REIMB-${format(new Date(), 'yyyy-MM')}-${String(this.reimbursements.length + 1).padStart(3, '0')}`,
+      requesterId: data.requesterId,
+      requesterName: data.requesterId, // In real app, would lookup name
+      projectId: data.projectId,
+      projectName: data.projectId ? `Project ${data.projectId}` : undefined,
+      category: data.category,
+      amount: data.amount,
+      currency: data.currency,
+      status: data.status,
+      description: data.description,
+      receiptsCount: data.receipts?.length || 0,
+      createdAt: new Date().toISOString()
+    }
+    
+    this.reimbursements.push(reimbursement)
+    await this.logAudit('reimbursement', reimbursement.id, 'CREATE', 'current_user', 'Current User')
+    
+    return reimbursement
+  }
+
+  async updateReimbursementStatus(reimbursementId: string, status: any, notes?: string): Promise<void> {
+    const reimbursement = this.reimbursements.find(r => r.id === reimbursementId)
+    if (reimbursement) {
+      const oldStatus = reimbursement.status
+      reimbursement.status = status
+      
+      if (status === 'SUBMITTED') {
+        reimbursement.submittedAt = new Date().toISOString()
+      } else if (status === 'APPROVED') {
+        reimbursement.approvedBy = 'current_user'
+        reimbursement.approvedAt = new Date().toISOString()
+      } else if (status === 'PAID') {
+        reimbursement.paidAt = new Date().toISOString()
+      } else if (status === 'POSTED') {
+        reimbursement.postedAt = new Date().toISOString()
+      }
+      
+      await this.logAudit('reimbursement', reimbursementId, 'STATUS_CHANGE', 'current_user', 'Current User', {
+        oldStatus,
+        newStatus: status,
+        notes
+      })
+    }
+  }
+
+  // Journal Management Methods
+  async getJournalStats(params: FinanceFilterParams = {}): Promise<any> {
+    const journals = await this.getJournalEntries(params)
+    
+    const totalEntries = journals.length
+    const draftEntries = journals.filter(j => j.status === 'DRAFT').length
+    const postedEntries = journals.filter(j => j.status === 'POSTED').length
+    const totalAmount = journals.reduce((sum, j) => sum + (j.totalAmount || j.totalDebit || 0), 0)
+    
+    return {
+      totalEntries,
+      totalAmount,
+      draftEntries,
+      postedEntries
+    }
+  }
+
+  async createJournalEntry(data: any): Promise<JournalEntrySummary> {
+    const journal: JournalEntrySummary = {
+      id: `je_${Date.now()}`,
+      code: data.code || `JE-${format(new Date(), 'yyyy-MM')}-${String(this.journalEntries.length + 1).padStart(3, '0')}`,
+      memo: data.memo,
+      status: 'DRAFT',
+      journalDate: format(data.journalDate || new Date(), 'yyyy-MM-dd'),
+      totalDebit: data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0),
+      totalCredit: data.lines.reduce((sum: number, line: any) => sum + (line.credit || 0), 0),
+      totalAmount: data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0),
+      createdBy: 'current_user',
+      createdAt: new Date().toISOString()
+    }
+    
+    this.journalEntries.push(journal)
+    
+    // Create journal lines
+    data.lines.forEach((lineData: any) => {
+      const line: JournalLine = {
+        id: `jl_${Date.now()}_${Math.random()}`,
+        journalId: journal.id,
+        accountId: lineData.accountId,
+        accountCode: '',
+        accountName: lineData.accountName || '',
+        debit: lineData.debit || 0,
+        credit: lineData.credit || 0,
+        currency: 'IDR',
+        customerId: lineData.customerId,
+        projectId: lineData.projectId,
+        categoryId: lineData.categoryId,
+        description: lineData.description
+      }
+      this.journalLines.push(line)
+    })
+    
+    await this.logAudit('journal_entry', journal.id, 'CREATE', 'current_user', 'Current User')
+    
+    return journal
+  }
+
+  async postJournalEntry(journalId: string): Promise<void> {
+    const journal = this.journalEntries.find(j => j.id === journalId)
+    if (journal && journal.status === 'DRAFT') {
+      journal.status = 'POSTED'
+      journal.postedAt = new Date().toISOString()
+      journal.postedBy = 'current_user'
+      
+      await this.logAudit('journal_entry', journalId, 'POSTED', 'current_user', 'Current User')
+    }
+  }
+
+  // Account Management Methods
+  async createAccount(data: any): Promise<ChartOfAccountSummary> {
+    const account: ChartOfAccountSummary = {
+      id: `acc_${Date.now()}`,
+      code: data.code,
+      name: data.name,
+      type: data.type,
+      isProfitLoss: data.isProfitLoss,
+      parentId: data.parentId || undefined,
+      allowPosting: data.allowPosting,
+      currency: data.currency,
+      isActive: true,
+      balance: 0,
+      description: data.description
+    }
+    
+    this.chartOfAccounts.push(account)
+    await this.logAudit('chart_of_accounts', account.id, 'CREATE', 'current_user', 'Current User')
+    
+    return account
+  }
+
+  async updateAccount(accountId: string, data: any): Promise<void> {
+    const account = this.chartOfAccounts.find(a => a.id === accountId)
+    if (account) {
+      const oldData = { ...account }
+      Object.assign(account, data)
+      
+      await this.logAudit('chart_of_accounts', accountId, 'UPDATE', 'current_user', 'Current User', {
+        oldData,
+        newData: data
+      })
+    }
   }
 }
 
