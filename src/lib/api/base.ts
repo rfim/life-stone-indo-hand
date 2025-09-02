@@ -132,6 +132,37 @@ export function createEntityService<T extends BaseEntity>(
 
   const update = async (id: string, data: Partial<Omit<T, keyof BaseEntity>>): Promise<{ id: string; data: T }> => {
     try {
+      // Check if spark is available
+      if (typeof window === 'undefined' || !window.spark || !window.spark.kv) {
+        // Fallback to localStorage
+        const localData = localStorage.getItem(storageKey)
+        const allData: T[] = localData ? JSON.parse(localData) : []
+        const itemIndex = allData.findIndex(item => item.id === id && !item.isDeleted)
+        
+        if (itemIndex === -1) {
+          throw new Error(`${entityName} not found`)
+        }
+
+        // Validate if validation function provided
+        if (validateFn) {
+          const validation = validateFn({ ...allData[itemIndex], ...data })
+          if (!validation.success) {
+            throw new Error(`Validation failed: ${JSON.stringify(validation.errors)}`)
+          }
+        }
+
+        const updatedItem: T = {
+          ...allData[itemIndex],
+          ...data,
+          ...updateTimestamps()
+        } as T
+
+        allData[itemIndex] = updatedItem
+        localStorage.setItem(storageKey, JSON.stringify(allData))
+        
+        return { id, data: updatedItem }
+      }
+
       const allData: T[] = await spark.kv.get(storageKey) || []
       const itemIndex = allData.findIndex(item => item.id === id && !item.isDeleted)
       
@@ -165,6 +196,29 @@ export function createEntityService<T extends BaseEntity>(
 
   const remove = async (id: string): Promise<{ success: boolean }> => {
     try {
+      // Check if spark is available
+      if (typeof window === 'undefined' || !window.spark || !window.spark.kv) {
+        // Fallback to localStorage
+        const localData = localStorage.getItem(storageKey)
+        const allData: T[] = localData ? JSON.parse(localData) : []
+        const itemIndex = allData.findIndex(item => item.id === id && !item.isDeleted)
+        
+        if (itemIndex === -1) {
+          throw new Error(`${entityName} not found`)
+        }
+
+        // Soft delete
+        allData[itemIndex] = {
+          ...allData[itemIndex],
+          isDeleted: true,
+          ...updateTimestamps()
+        }
+        
+        localStorage.setItem(storageKey, JSON.stringify(allData))
+        
+        return { success: true }
+      }
+
       const allData: T[] = await spark.kv.get(storageKey) || []
       const itemIndex = allData.findIndex(item => item.id === id && !item.isDeleted)
       
