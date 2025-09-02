@@ -64,6 +64,8 @@ import { CreateColdCallPage } from '@/pages/marketing/cold-calls/create'
 import { ViewColdCallPage } from '@/pages/marketing/cold-calls/view'
 import { EditColdCallPage } from '@/pages/marketing/cold-calls/edit'
 import { SalesOrdersPage } from '@/pages/marketing/sales-orders'
+import { CreateSalesOrderPage } from '@/pages/marketing/sales-orders/create'
+import { ViewSalesOrderPage } from '@/pages/marketing/sales-orders/view'
 import { MeetingMinutesPage } from '@/pages/marketing/meeting-minutes'
 import { CreateMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/create'
 import { ViewMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/view'
@@ -153,6 +155,8 @@ export function AppRouter() {
       <Route path="/marketing/meeting-minutes/:id/clone" element={<CloneMeetingMinutesPage />} />
       
       <Route path="/marketing/sales-orders" element={<SalesOrdersPage />} />
+      <Route path="/marketing/sales-orders/create" element={<CreateSalesOrderPage />} />
+      <Route path="/marketing/sales-orders/:id/view" element={<ViewSalesOrderPage />} />
       
       {/* Purchasing Dashboard */}
       <Route path="/purchasing/dashboard" element={<DashboardApp />} />
