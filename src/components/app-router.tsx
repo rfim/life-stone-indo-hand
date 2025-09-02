@@ -74,6 +74,10 @@ import { CloneMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/clone
 import { ContractsPage } from '@/pages/marketing/contracts'
 import { CreateContractPage } from '@/pages/marketing/contracts/create'
 import { ViewContractPage } from '@/pages/marketing/contracts/view'
+import { PriceListsPage } from '@/pages/marketing/price-lists'
+import { CommissionsPage } from '@/pages/marketing/commissions'
+import { DeliveryOrdersPage } from '@/pages/marketing/delivery-orders'
+import { SettingsPage } from '@/pages/marketing/settings'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -165,6 +169,18 @@ export function AppRouter() {
       <Route path="/marketing/contracts" element={<ContractsPage />} />
       <Route path="/marketing/contracts/create" element={<CreateContractPage />} />
       <Route path="/marketing/contracts/:id/view" element={<ViewContractPage />} />
+      
+      {/* Price Lists */}
+      <Route path="/marketing/price-lists" element={<PriceListsPage />} />
+      
+      {/* Commissions */}
+      <Route path="/marketing/commissions" element={<CommissionsPage />} />
+      
+      {/* Delivery Orders */}
+      <Route path="/marketing/delivery-orders" element={<DeliveryOrdersPage />} />
+      
+      {/* Settings */}
+      <Route path="/marketing/settings" element={<SettingsPage />} />
       
       {/* Purchasing Dashboard */}
       <Route path="/purchasing/dashboard" element={<DashboardApp />} />
