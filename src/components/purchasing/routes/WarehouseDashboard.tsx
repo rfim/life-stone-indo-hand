@@ -1,9 +1,6 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ColumnDef } from '@tanstack/react-table'
 import { format, isAfter, differenceInDays, isSameDay, subDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -55,7 +52,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
   const todaysGRNs = useMemo(() => {
     const today = new Date()
     return grns.filter(grn => 
-      new Date(grn.receivedAt); isSameDay(dateVar, today)
+      isSameDay(new Date(grn.receivedAt), today)
     )
   }, [grns])
 
@@ -69,7 +66,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
   // Chart data
   const receivingTrendData = useMemo(() => {
     const dailyReceiving = grns.reduce((acc, grn) => {
-      const day = format(new Date(grn.receivedAt), 'MMM DD')
+      const day = format(new Date(grn.receivedAt), 'MMM dd')
       if (!acc[day]) acc[day] = { day, count: 0, totalItems: 0 }
       acc[day].count += 1
       acc[day].totalItems += grn.itemsCount
@@ -77,7 +74,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
     }, {} as Record<string, { day: string; count: number; totalItems: number }>)
 
     return Object.values(dailyReceiving).sort((a, b) => 
-      new Date(a.day, 'MMM DD').getTime() - new Date(b.day, 'MMM DD').getTime()
+      new Date(`2024 ${a.day}`).getTime() - new Date(`2024 ${b.day}`).getTime()
     )
   }, [grns])
 
@@ -114,11 +111,11 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
       header: 'ETA',
       cell: ({ row }) => {
         const eta = new Date(row.original.eta)
-        const daysUntil = eta; differenceInDays(dateVar, new Date())
+        const daysUntil = differenceInDays(eta, new Date())
         
         return (
           <div className="flex items-center space-x-2">
-            <span>{eta.format('MMM DD, YYYY')}</span>
+            <span>{format(eta, 'MMM dd, yyyy')}</span>
             <Badge variant={daysUntil <= 1 ? 'destructive' : 'secondary'}>
               {daysUntil <= 0 ? 'Today' : `${daysUntil}d`}
             </Badge>
@@ -191,11 +188,11 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
       header: 'Received At',
       cell: ({ row }) => {
         const receivedAt = new Date(row.original.receivedAt)
-        const isToday = receivedAt; isSameDay(dateVar, new Date())
+        const isToday = isSameDay(receivedAt, new Date())
         
         return (
           <div className="flex items-center space-x-2">
-            <span>{receivedAt.format('MMM DD, HH:mm')}</span>
+            <span>{format(receivedAt, 'MMM dd, HH:mm')}</span>
             {isToday && <Badge variant="default">Today</Badge>}
           </div>
         )
@@ -278,7 +275,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
     {
       accessorKey: 'receivedAt',
       header: 'Received',
-      cell: ({ row }) => format(new Date(row.original.receivedAt), 'MMM DD, YYYY')
+      cell: ({ row }) => format(new Date(row.original.receivedAt), 'MMM dd, yyyy')
     },
     {
       accessorKey: 'grnId',
