@@ -112,6 +112,7 @@ export const NAV_TREE: NavGroup[] = [
   {
     group: "Warehouse",
     children: [
+      { label: "Warehouse Dashboard", path: "/warehouse/dashboard", icon: BarChart3 },
       { label: "SKU Management", path: "/warehouse/sku-management", icon: BarChart3 },
       { label: "Receive Items", path: "/warehouse/receive-items", icon: ArrowDown },
       { label: "Complaint / Purchase Retur", path: "/warehouse/complaint-retur", icon: RotateCcw },

@@ -27,5 +27,46 @@
   "complaints": [
     {"id":"cmp_6001","code":"CMP-2025-007","supplier":"Mentari Stone","reason":"Ujung batu retak","nominal":2500000,"status":"Opened","ageDays":3,"isFreeSlab":false},
     {"id":"cmp_6002","code":"CMP-2025-008","supplier":"Cipta Marmer Alam","reason":"Free slab gores (free slab)","nominal":0,"status":"Acknowledged","ageDays":1,"isFreeSlab":true}
+  ],
+  "locations": [
+    {"id":"loc_main","code":"MAIN","name":"Gudang Utama","type":"warehouse"},
+    {"id":"loc_cut","code":"CUT","name":"Area Cutting","type":"workstation","parentId":"loc_main"},
+    {"id":"loc_polish","code":"POLISH","name":"Area Polishing","type":"workstation","parentId":"loc_main"},
+    {"id":"loc_yard","code":"YARD","name":"Yard Outdoor","type":"storage"}
+  ],
+  "skus": [
+    {"id":"sku_carrara","code":"CRR-A12","name":"Marble Carrara A12","description":"Premium white marble","uom":"SLAB","defaultFinishing":"POLISHED","minLevel":5,"isActive":true,"createdAt":"2025-08-01T00:00:00Z"},
+    {"id":"sku_blackk2","code":"BLK-K2","name":"Granite Black K2","description":"Black granite premium","uom":"SLAB","defaultFinishing":"HONED","minLevel":3,"isActive":true,"createdAt":"2025-08-01T00:00:00Z"},
+    {"id":"sku_emperador","code":"EMP-001","name":"Marble Emperador","description":"Brown marble with veins","uom":"SLAB","defaultFinishing":"POLISHED","minLevel":2,"isActive":true,"createdAt":"2025-08-01T00:00:00Z"}
+  ],
+  "inventory": [
+    {"id":"inv1","skuId":"sku_carrara","locationId":"loc_main","finishing":"POLISHED","onHand":12,"reserved":3,"incoming":2,"outgoing":0,"available":9,"updatedAt":"2025-09-01T08:00:00Z"},
+    {"id":"inv2","skuId":"sku_blackk2","locationId":"loc_main","finishing":"HONED","onHand":6,"reserved":1,"incoming":0,"outgoing":0,"available":5,"updatedAt":"2025-09-01T08:00:00Z"},
+    {"id":"inv3","skuId":"sku_emperador","locationId":"loc_main","finishing":"POLISHED","onHand":4,"reserved":2,"incoming":1,"outgoing":0,"available":2,"updatedAt":"2025-09-01T08:00:00Z"},
+    {"id":"inv4","skuId":"sku_carrara","locationId":"loc_cut","finishing":"RAW","onHand":3,"reserved":0,"incoming":0,"outgoing":0,"available":3,"updatedAt":"2025-09-01T08:00:00Z"}
+  ],
+  "movements": [
+    {"id":"mv1","type":"INBOUND","skuId":"sku_carrara","qty":2,"uom":"SLAB","toLocationId":"loc_main","finishing":"POLISHED","reason":"Receiving from PO-2025-012","refDocType":"PO","refDocId":"PO-2025-012","requestedBy":"warehouse_user","status":"Posted","attachments":[],"createdAt":"2025-08-31T09:00:00Z","updatedAt":"2025-08-31T09:30:00Z"},
+    {"id":"mv2","type":"TRANSFER","skuId":"sku_blackk2","qty":1,"uom":"SLAB","fromLocationId":"loc_main","toLocationId":"loc_cut","finishing":"HONED","reason":"Transfer for cutting","requestedBy":"warehouse_user","status":"Posted","attachments":[],"createdAt":"2025-09-01T07:00:00Z","updatedAt":"2025-09-01T07:15:00Z"},
+    {"id":"mv3","type":"OUTBOUND","skuId":"sku_emperador","qty":1,"uom":"SLAB","fromLocationId":"loc_main","finishing":"POLISHED","reason":"Customer delivery","refDocType":"SO","refDocId":"SO-2025-005","requestedBy":"sales_user","status":"Approved","attachments":[],"createdAt":"2025-09-01T10:00:00Z","updatedAt":"2025-09-01T10:00:00Z"}
+  ],
+  "adjustments": [
+    {"id":"adj1","adjType":"COUNT_CORRECTION","payload":{"countedQty":11,"systemQty":12,"reason":"Opname bulanan","photos":["count_photo1.jpg"]},"skuId":"sku_blackk2","locationId":"loc_main","qtyDelta":-1,"uom":"SLAB","createdBy":"warehouse_supervisor","status":"Posted","attachments":[],"createdAt":"2025-08-30T14:00:00Z","updatedAt":"2025-08-30T14:30:00Z"},
+    {"id":"adj2","adjType":"FINISHING_CHANGE","payload":{"fromFinishing":"HONED","toFinishing":"POLISHED","qty":2,"note":"Customer request change"},"skuId":"sku_blackk2","locationId":"loc_main","qtyDelta":0,"uom":"SLAB","createdBy":"warehouse_user","status":"Approved","attachments":[],"createdAt":"2025-09-01T02:00:00Z","updatedAt":"2025-09-01T02:00:00Z"},
+    {"id":"adj3","adjType":"DAMAGE","payload":{"note":"Cracked during handling","photos":["damage_photo1.jpg","damage_photo2.jpg"]},"skuId":"sku_emperador","locationId":"loc_cut","qtyDelta":-1,"uom":"SLAB","createdBy":"warehouse_user","status":"Posted","attachments":[],"createdAt":"2025-08-29T16:00:00Z","updatedAt":"2025-08-29T16:30:00Z"}
+  ],
+  "stockCards": [
+    {"id":"sc1","skuId":"sku_carrara","locationId":"loc_main","finishing":"POLISHED","ts":"2025-08-31T09:30:00Z","refType":"Movement","refId":"mv1","type":"+","qty":2,"uom":"SLAB","balanceAfter":12,"note":"Receiving from PO-2025-012"},
+    {"id":"sc2","skuId":"sku_blackk2","locationId":"loc_main","finishing":"HONED","ts":"2025-08-30T14:30:00Z","refType":"Adjustment","refId":"adj1","type":"-","qty":1,"uom":"SLAB","balanceAfter":6,"note":"Count correction - monthly opname"},
+    {"id":"sc3","skuId":"sku_blackk2","locationId":"loc_main","finishing":"HONED","ts":"2025-09-01T07:15:00Z","refType":"Movement","refId":"mv2","type":"-","qty":1,"uom":"SLAB","balanceAfter":5,"note":"Transfer to cutting area"},
+    {"id":"sc4","skuId":"sku_blackk2","locationId":"loc_cut","finishing":"HONED","ts":"2025-09-01T07:15:00Z","refType":"Movement","refId":"mv2","type":"+","qty":1,"uom":"SLAB","balanceAfter":1,"note":"Transfer from main warehouse"}
+  ],
+  "siks": [
+    {"id":"sik1","code":"SIK-2025-010","sikType":"FINISHING_CHANGE","items":[{"skuId":"sku_blackk2","qty":2,"uom":"SLAB","fromFinishing":"HONED","toFinishing":"POLISHED"}],"assignedTo":"Tim Finishing A","dueDate":"2025-09-03","status":"Issued","photos":[],"notes":"Customer change request","qrPayload":"SIK|SIK-2025-010|verification","printUrl":"/sik/SIK-2025-010/print","createdAt":"2025-09-01T02:00:00Z","updatedAt":"2025-09-01T02:15:00Z"},
+    {"id":"sik2","code":"SIK-2025-011","sikType":"CUTTING","items":[{"skuId":"sku_carrara","qty":1,"uom":"SLAB","cutSpecs":{"sourceDims":{"length":300,"width":200},"cutPlan":[{"pieceDims":{"length":150,"width":100},"qty":4}],"scrapHandling":"return-to-stock"}}],"assignedTo":"Tim Cutting B","dueDate":"2025-09-05","status":"Draft","photos":[],"notes":"Cut to tiles 150x100","createdAt":"2025-09-01T08:00:00Z","updatedAt":"2025-09-01T08:00:00Z"}
+  ],
+  "inboundRequests": [
+    {"id":"inb1","code":"INB-2025-022","supplierId":"supplier_cma","supplierName":"Cipta Marmer Alam","refPO":"PO-2025-013","etaDate":"2025-09-02","items":[{"skuId":"sku_blackk2","skuCode":"BLK-K2","desc":"Granite Black K2","qty":2,"uom":"SLAB","finishing":"HONED"}],"warehouseReady":false,"status":"Scheduled","notes":"Butuh forklift besar untuk handling","createdAt":"2025-08-31T10:00:00Z","updatedAt":"2025-08-31T10:00:00Z"},
+    {"id":"inb2","code":"INB-2025-023","supplierId":"supplier_mentari","supplierName":"Mentari Stone","refPO":"PO-2025-010","etaDate":"2025-09-04","items":[{"skuId":"sku_carrara","skuCode":"CRR-A12","desc":"Marble Carrara A12","qty":3,"uom":"SLAB","finishing":"POLISHED"}],"warehouseReady":true,"status":"Planned","notes":"Regular delivery","createdAt":"2025-09-01T09:00:00Z","updatedAt":"2025-09-01T09:00:00Z"}
   ]
 }
