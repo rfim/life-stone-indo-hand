@@ -20,7 +20,7 @@ const getStatusColor = (status: DOStatus) => {
   }
 }
 
-export function DeliveryOrdersPage() {
+export function MarketingDeliveryOrdersPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: deliveryOrders, isLoading } = useDeliveryOrdersApi.useList()

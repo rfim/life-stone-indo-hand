@@ -76,7 +76,7 @@ import { CreateContractPage } from '@/pages/marketing/contracts/create'
 import { ViewContractPage } from '@/pages/marketing/contracts/view'
 import { PriceListsPage } from '@/pages/marketing/price-lists'
 import { CommissionsPage } from '@/pages/marketing/commissions'
-import { DeliveryOrdersPage } from '@/pages/marketing/delivery-orders'
+import { MarketingDeliveryOrdersPage } from '@/pages/marketing/delivery-orders'
 import { SettingsPage } from '@/pages/marketing/settings'
 
 export function AppRouter() {
@@ -177,7 +177,7 @@ export function AppRouter() {
       <Route path="/marketing/commissions" element={<CommissionsPage />} />
       
       {/* Delivery Orders */}
-      <Route path="/marketing/delivery-orders" element={<DeliveryOrdersPage />} />
+      <Route path="/marketing/delivery-orders" element={<MarketingDeliveryOrdersPage />} />
       
       {/* Settings */}
       <Route path="/marketing/settings" element={<SettingsPage />} />
