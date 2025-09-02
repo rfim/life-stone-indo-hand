@@ -57,6 +57,14 @@ import { DashboardApp } from '@/components/purchasing/DashboardApp'
 import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
 import { StockCard } from '@/components/warehouse/StockCard'
 
+// Import marketing pages
+import { MarketingDashboard } from '@/pages/marketing/dashboard'
+import { ColdCallsPage } from '@/pages/marketing/cold-calls'
+import { CreateColdCallPage } from '@/pages/marketing/cold-calls/create'
+import { ViewColdCallPage } from '@/pages/marketing/cold-calls/view'
+import { EditColdCallPage } from '@/pages/marketing/cold-calls/edit'
+import { SalesOrdersPage } from '@/pages/marketing/sales-orders'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -69,6 +77,12 @@ export function AppRouter() {
         return <DashboardApp />
       case '/warehouse/dashboard':
         return <WarehouseDashboard />
+      case '/marketing/dashboard':
+        return <MarketingDashboard />
+      case '/marketing/cold-calls':
+        return <ColdCallsPage />
+      case '/marketing/sales-orders':
+        return <SalesOrdersPage />
       case '/master-data':
         return <MasterDataIndexPage />
       case '/master-data/category':
@@ -114,6 +128,16 @@ export function AppRouter() {
     <Routes>
       {/* Redirect root to dashboard overview */}
       <Route path="/" element={<Navigate to="/dashboards/overview" replace />} />
+      
+      {/* Marketing Dashboard */}
+      <Route path="/marketing/dashboard" element={<MarketingDashboard />} />
+      
+      {/* Marketing Pages */}
+      <Route path="/marketing/cold-calls" element={<ColdCallsPage />} />
+      <Route path="/marketing/cold-calls/create" element={<CreateColdCallPage />} />
+      <Route path="/marketing/cold-calls/:id/view" element={<ViewColdCallPage />} />
+      <Route path="/marketing/cold-calls/:id/edit" element={<EditColdCallPage />} />
+      <Route path="/marketing/sales-orders" element={<SalesOrdersPage />} />
       
       {/* Purchasing Dashboard */}
       <Route path="/purchasing/dashboard" element={<DashboardApp />} />
