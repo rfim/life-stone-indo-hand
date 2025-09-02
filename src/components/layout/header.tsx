@@ -11,7 +11,8 @@ import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { MobileDrawer } from './mobile-drawer'
-import lifestoneLogo from '@/assets/images/lifestone-logo.svg'
+// Use public logo instead of asset import for better compatibility
+const lifestoneLogo = '/lifestone-logo.svg'
 
 export function Header() {
   const { 

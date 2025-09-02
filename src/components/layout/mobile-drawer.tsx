@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { useSidebarState } from '@/hooks/use-sidebar-state'
 import { NAV_TREE } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import lifestoneLogo from '@/assets/images/lifestone-logo.svg'
+// Use public logo instead of asset import for better compatibility
+const lifestoneLogo = '/lifestone-logo.svg'
 
 interface MobileDrawerProps {
   open: boolean
