@@ -129,10 +129,10 @@ export const NAV_TREE: NavGroup[] = [
     children: [
       { label: "Marketing Dashboard", path: "/marketing/dashboard", icon: BarChart3 },
       { label: "Cold Calls", path: "/marketing/cold-calls", icon: Phone },
-      { label: "Meeting Minutes", path: "/marketing/notulen", icon: NotebookPen },
+      { label: "Meeting Minutes", path: "/marketing/meeting-minutes", icon: NotebookPen },
       { label: "Sales Orders", path: "/marketing/sales-orders", icon: ShoppingCart },
       { label: "Delivery Orders", path: "/marketing/delivery-orders", icon: Route },
-      { label: "Contracts", path: "/marketing/contract", icon: ScrollText },
+      { label: "Contracts", path: "/marketing/contracts", icon: ScrollText },
       { label: "Price Lists", path: "/marketing/price-lists", icon: DollarSign },
       { label: "Commissions", path: "/marketing/commissions", icon: HandCoins },
       { label: "Settings", path: "/marketing/settings", icon: Settings }

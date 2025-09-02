@@ -64,6 +64,11 @@ import { CreateColdCallPage } from '@/pages/marketing/cold-calls/create'
 import { ViewColdCallPage } from '@/pages/marketing/cold-calls/view'
 import { EditColdCallPage } from '@/pages/marketing/cold-calls/edit'
 import { SalesOrdersPage } from '@/pages/marketing/sales-orders'
+import { MeetingMinutesPage } from '@/pages/marketing/meeting-minutes'
+import { CreateMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/create'
+import { ViewMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/view'
+import { EditMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/edit'
+import { CloneMeetingMinutesPage } from '@/pages/marketing/meeting-minutes/clone'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -83,6 +88,8 @@ export function AppRouter() {
         return <ColdCallsPage />
       case '/marketing/sales-orders':
         return <SalesOrdersPage />
+      case '/marketing/meeting-minutes':
+        return <MeetingMinutesPage />
       case '/master-data':
         return <MasterDataIndexPage />
       case '/master-data/category':
@@ -137,6 +144,14 @@ export function AppRouter() {
       <Route path="/marketing/cold-calls/create" element={<CreateColdCallPage />} />
       <Route path="/marketing/cold-calls/:id/view" element={<ViewColdCallPage />} />
       <Route path="/marketing/cold-calls/:id/edit" element={<EditColdCallPage />} />
+      
+      {/* Meeting Minutes */}
+      <Route path="/marketing/meeting-minutes" element={<MeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/create" element={<CreateMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/view" element={<ViewMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/edit" element={<EditMeetingMinutesPage />} />
+      <Route path="/marketing/meeting-minutes/:id/clone" element={<CloneMeetingMinutesPage />} />
+      
       <Route path="/marketing/sales-orders" element={<SalesOrdersPage />} />
       
       {/* Purchasing Dashboard */}
