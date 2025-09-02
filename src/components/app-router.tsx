@@ -57,6 +57,9 @@ import { DashboardApp } from '@/components/purchasing/DashboardApp'
 import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
 import { StockCard } from '@/components/warehouse/StockCard'
 
+// Import complaint QR page
+import { ComplaintQrPage } from '@/components/complaint/ComplaintQrPage'
+
 export function AppRouter() {
   const allPaths = getAllPaths()
 
@@ -121,6 +124,9 @@ export function AppRouter() {
       {/* Warehouse Dashboard */}
       <Route path="/warehouse/dashboard" element={<WarehouseDashboard />} />
       <Route path="/warehouse/stock-card/:skuId" element={<StockCard />} />
+      
+      {/* Complaint QR Code */}
+      <Route path="/complaint/:id/qr" element={<ComplaintQrPage />} />
       
       {/* Purchase Orders - dedicated pages */}
       <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
