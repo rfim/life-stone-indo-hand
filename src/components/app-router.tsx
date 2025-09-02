@@ -7,6 +7,7 @@ import { DashboardOverview } from '@/components/dashboard-overview'
 // Import specific pages that exist
 import { DashboardApp } from '@/components/purchasing/DashboardApp'
 import { WarehouseDashboard } from '@/components/warehouse/WarehouseDashboard'
+import { FinancialDashboard } from '@/components/finance/FinancialDashboard'
 
 export function AppRouter() {
   const allPaths = getAllPaths()
@@ -20,6 +21,8 @@ export function AppRouter() {
         return <DashboardApp />
       case '/warehouse/dashboard':
         return <WarehouseDashboard />
+      case '/dashboards/financial':
+        return <FinancialDashboard />
       default:
         // Use generic page for master data paths, list page for others
         if (path.startsWith('/masters/')) {
