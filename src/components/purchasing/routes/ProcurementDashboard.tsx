@@ -1,9 +1,6 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ColumnDef } from '@tanstack/react-table'
-import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ColumnDef } from '@tanstack/react-table'
 import { format, isAfter, differenceInDays } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -153,11 +150,11 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
       header: 'Needed By',
       cell: ({ row }) => {
         const neededBy = new Date(row.original.neededBy)
-        const isUrgent = neededBy; differenceInDays(dateVar, new Date()) <= 7
+        const isUrgent = differenceInDays(neededBy, new Date()) <= 7
         
         return (
           <div className="flex items-center space-x-2">
-            <span>{neededBy.format('MMM DD, YYYY')}</span>
+            <span>{format(neededBy, 'MMM dd, yyyy')}</span>
             {isUrgent && <Badge variant="destructive">Urgent</Badge>}
           </div>
         )
@@ -203,11 +200,11 @@ export function ProcurementDashboard({ filterParams }: ProcurementDashboardProps
       header: 'ETA',
       cell: ({ row }) => {
         const eta = new Date(row.original.eta)
-        const daysUntil = eta; differenceInDays(dateVar, new Date())
+        const daysUntil = differenceInDays(eta, new Date())
         
         return (
           <div className="flex items-center space-x-2">
-            <span>{eta.format('MMM DD, YYYY')}</span>
+            <span>{format(eta, 'MMM dd, yyyy')}</span>
             <Badge variant={daysUntil <= 1 ? 'destructive' : 'secondary'}>
               {daysUntil <= 0 ? 'Today' : `${daysUntil}d`}
             </Badge>
