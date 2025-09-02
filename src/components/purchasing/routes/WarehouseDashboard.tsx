@@ -55,7 +55,7 @@ export function WarehouseDashboard({ filterParams }: WarehouseDashboardProps) {
   const todaysGRNs = useMemo(() => {
     const today = new Date()
     return grns.filter(grn => 
-      new Date(grn.receivedAt); isSameDay(dateVar, today)
+      isSameDay(new Date(grn.receivedAt), today)
     )
   }, [grns])
 
