@@ -12,6 +12,34 @@ import {
 import { itemsService } from '@/lib/api/items'
 import { deliveryOrderService } from '@/lib/api/delivery-orders'
 
+// Import spark for KV operations
+declare global {
+  interface Window {
+    spark: any
+  }
+}
+
+const spark = (typeof window !== 'undefined' && window.spark) || {
+  kv: {
+    get: async (key: string) => {
+      try {
+        const data = localStorage.getItem(`spark:${key}`)
+        return data ? JSON.parse(data) : null
+      } catch {
+        return null
+      }
+    },
+    set: async (key: string, value: any) => {
+      try {
+        localStorage.setItem(`spark:${key}`, JSON.stringify(value))
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+}
+
 export async function seedDatabase() {
   console.log('🌱 Starting database seeding...')
   
@@ -494,8 +522,176 @@ export async function seedDatabase() {
 
     console.log('✅ Database seeding completed successfully!')
     
+    // Seed Director Dashboard data
+    await seedDirectorDashboardData()
+    
   } catch (error) {
     console.error('❌ Error seeding database:', error)
+    throw error
+  }
+}
+
+async function seedDirectorDashboardData() {
+  try {
+    console.log('📊 Seeding Director Dashboard data...')
+    
+    // Seed sample approvals
+    const approvals = [
+      {
+        id: `approval-${Date.now()}-1`,
+        entityType: 'PurchaseRequest',
+        entityId: 'PR-2024-001',
+        requestedBy: 'John Doe',
+        requestedAt: new Date().toISOString(),
+        requiredApprovers: ['director', 'finance_manager'],
+        status: 'Pending',
+        priority: 'Urgent',
+        metadata: {
+          amount: 15000000,
+          supplier: 'PT. Supplier ABC',
+          description: 'Raw materials for Q1 production'
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false
+      },
+      {
+        id: `approval-${Date.now()}-2`,
+        entityType: 'ClientDiscount',
+        entityId: 'SO-2024-002',
+        requestedBy: 'Jane Smith',
+        requestedAt: new Date(Date.now() - 86400000).toISOString(),
+        requiredApprovers: ['director'],
+        status: 'Pending',
+        priority: 'High',
+        metadata: {
+          originalAmount: 50000000,
+          discountPercent: 15,
+          customerName: 'PT. Major Client'
+        },
+        createdAt: new Date(Date.now() - 86400000),
+        updatedAt: new Date(Date.now() - 86400000),
+        isDeleted: false
+      },
+      {
+        id: `approval-${Date.now()}-3`,
+        entityType: 'HRGAPayment',
+        entityId: 'HR-PAY-001',
+        requestedBy: 'HRGA Team',
+        requestedAt: new Date(Date.now() - 172800000).toISOString(),
+        requiredApprovers: ['director'],
+        status: 'Approved',
+        priority: 'Medium',
+        approvedBy: 'director',
+        approvedAt: new Date(Date.now() - 86400000).toISOString(),
+        notes: 'Approved for Q1 training budget',
+        metadata: {
+          amount: 25000000,
+          description: 'Employee training and development'
+        },
+        createdAt: new Date(Date.now() - 172800000),
+        updatedAt: new Date(Date.now() - 86400000),
+        isDeleted: false
+      }
+    ]
+
+    await spark.kv.set('erp.approvals', approvals)
+
+    // Seed sample content requests
+    const contentRequests = [
+      {
+        id: `content-${Date.now()}-1`,
+        title: 'Granite Product Showcase Video',
+        description: 'Create a professional video showcasing our premium granite collection for social media marketing',
+        productDetails: {
+          productId: 'GRN-001',
+          productName: 'Premium Granite Collection',
+          category: 'Natural Stone',
+          specifications: 'Various colors and finishes available',
+          targetAudience: 'Architects and interior designers',
+          brandingGuidelines: 'Use company logo and brand colors'
+        },
+        requestedBy: 'Marketing Team',
+        department: 'Marketing',
+        priority: 'High',
+        deadline: new Date(Date.now() + 7 * 86400000).toISOString(), // 7 days from now
+        status: 'InProgress',
+        assignedTo: 'Creative Team',
+        deliverables: [
+          {
+            type: 'ProductVideo',
+            platform: 'Instagram, YouTube',
+            dimensions: '1080x1920, 1920x1080',
+            format: 'MP4'
+          },
+          {
+            type: 'SocialMediaPost',
+            platform: 'Instagram',
+            dimensions: '1080x1080',
+            format: 'JPG'
+          }
+        ],
+        approvals: [],
+        createdAt: new Date(Date.now() - 86400000),
+        updatedAt: new Date(),
+        isDeleted: false
+      },
+      {
+        id: `content-${Date.now()}-2`,
+        title: 'New Product Brochure Design',
+        description: 'Design professional brochure for new marble collection launch',
+        productDetails: {
+          productId: 'MAR-002',
+          productName: 'Luxury Marble Collection',
+          category: 'Natural Stone',
+          specifications: 'Premium Italian marble with unique veining patterns',
+          targetAudience: 'High-end residential and commercial projects',
+          brandingGuidelines: 'Elegant design following brand guidelines'
+        },
+        requestedBy: 'Sales Team',
+        department: 'Sales',
+        priority: 'Medium',
+        deadline: new Date(Date.now() + 14 * 86400000).toISOString(), // 14 days from now
+        status: 'Submitted',
+        deliverables: [
+          {
+            type: 'Brochure',
+            platform: 'Print and Digital',
+            dimensions: 'A4, 8 pages',
+            format: 'PDF for print, JPG for digital'
+          }
+        ],
+        approvals: [],
+        createdAt: new Date(Date.now() - 172800000),
+        updatedAt: new Date(Date.now() - 172800000),
+        isDeleted: false
+      }
+    ]
+
+    await spark.kv.set('erp.contentRequests', contentRequests)
+
+    // Seed meeting minute notifications
+    const meetingMinuteNotifications = [
+      {
+        id: `notification-${Date.now()}-1`,
+        meetingMinuteId: 'meeting-001',
+        daysOverdue: 8,
+        lastNotificationSent: new Date(Date.now() - 2 * 86400000).toISOString(),
+        remindersSent: 2,
+        assignedTo: ['sales_manager', 'project_lead'],
+        status: 'Active',
+        createdAt: new Date(Date.now() - 8 * 86400000),
+        updatedAt: new Date(Date.now() - 2 * 86400000),
+        isDeleted: false
+      }
+    ]
+
+    await spark.kv.set('erp.meetingMinuteNotifications', meetingMinuteNotifications)
+
+    console.log('✅ Director Dashboard data seeding completed!')
+    
+  } catch (error) {
+    console.error('❌ Error seeding Director Dashboard data:', error)
     throw error
   }
 }

@@ -163,6 +163,8 @@ export const NAV_TREE: NavGroup[] = [
   {
     group: "Dashboards",
     children: [
+      { label: "Director Dashboard", path: "/dashboards/director", icon: Users2 },
+      { label: "Supervisor Dashboard", path: "/dashboards/supervisor", icon: UserCog },
       { label: "Report Generation", path: "/dashboards/report-generation", icon: BarChart },
       { label: "Approval Management", path: "/dashboards/approval-management", icon: ClipboardCheck },
       { label: "Content Request Management", path: "/dashboards/content-requests", icon: MessageSquare },
