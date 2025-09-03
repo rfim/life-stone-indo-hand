@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { DataTable } from '@/components/data-table'
+import { SimpleDataTable } from './SimpleDataTable'
 import { 
   Clock, 
   CheckCircle, 
@@ -446,20 +446,22 @@ export function ApprovalManagement() {
         </TabsList>
         
         <TabsContent value="pending" className="mt-4">
-          <DataTable
+          <SimpleDataTable
             data={pendingApprovals}
             columns={columns}
             loading={isLoading}
             searchPlaceholder="Search pending approvals..."
+            title="Pending Approvals"
           />
         </TabsContent>
         
         <TabsContent value="processed" className="mt-4">
-          <DataTable
+          <SimpleDataTable
             data={processedApprovals}
             columns={columns}
             loading={isLoading}
             searchPlaceholder="Search processed approvals..."
+            title="Processed Approvals"
           />
         </TabsContent>
       </Tabs>

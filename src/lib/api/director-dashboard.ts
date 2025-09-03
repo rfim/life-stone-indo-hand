@@ -13,26 +13,123 @@ import {
   ApprovalType,
   ReportType
 } from '@/types/director-dashboard'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-// Content Request API
-export const useContentRequestsApi = createEntityService<ContentRequest>('contentRequests', {
-  defaultSort: { field: 'createdAt', direction: 'desc' }
-})
+// Create entity services
+const contentRequestsService = createEntityService<ContentRequest>('contentRequests', ['title', 'description', 'productDetails.productName'])
+const approvalsService = createEntityService<ApprovalRecord>('approvals', ['entityType', 'requestedBy', 'reason'])
+const meetingMinuteNotificationsService = createEntityService<MeetingMinuteNotification>('meetingMinuteNotifications', [])
+const dashboardConfigService = createEntityService<DashboardConfig>('dashboardConfigs', [])
 
-// Approval Management API
-export const useApprovalsApi = createEntityService<ApprovalRecord>('approvals', {
-  defaultSort: { field: 'requestedAt', direction: 'desc' }
-})
+// Content Request API hooks
+export const useContentRequestsApi = {
+  useList: (params?: any) => useQuery({
+    queryKey: ['contentRequests', params],
+    queryFn: () => contentRequestsService.list(params)
+  }),
+  
+  useGetById: (id: string) => useQuery({
+    queryKey: ['contentRequests', id],
+    queryFn: () => contentRequestsService.get(id),
+    enabled: !!id
+  }),
+  
+  useCreate: () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: (data: Partial<ContentRequest>) => contentRequestsService.create(data as any),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['contentRequests'] })
+      }
+    })
+  },
+  
+  useUpdate: () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: ({ id, data }: { id: string; data: Partial<ContentRequest> }) => 
+        contentRequestsService.update(id, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['contentRequests'] })
+      }
+    })
+  }
+}
 
-// Meeting Minute Notifications API
-export const useMeetingMinuteNotificationsApi = createEntityService<MeetingMinuteNotification>('meetingMinuteNotifications', {
-  defaultSort: { field: 'daysOverdue', direction: 'desc' }
-})
+// Approval Management API hooks
+export const useApprovalsApi = {
+  useList: (params?: any) => useQuery({
+    queryKey: ['approvals', params],
+    queryFn: async () => {
+      try {
+        const result = await approvalsService.list(params)
+        return result.data || []
+      } catch (error) {
+        console.error('Error fetching approvals:', error)
+        return []
+      }
+    }
+  }),
+  
+  useGetById: (id: string) => useQuery({
+    queryKey: ['approvals', id],
+    queryFn: () => approvalsService.get(id),
+    enabled: !!id
+  }),
+  
+  useCreate: () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: (data: Partial<ApprovalRecord>) => approvalsService.create(data as any),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['approvals'] })
+      }
+    })
+  },
+  
+  useUpdate: () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: ({ id, data }: { id: string; data: Partial<ApprovalRecord> }) => 
+        approvalsService.update(id, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['approvals'] })
+      }
+    })
+  }
+}
 
-// Dashboard Configuration API
-export const useDashboardConfigApi = createEntityService<DashboardConfig>('dashboardConfigs', {
-  defaultSort: { field: 'updatedAt', direction: 'desc' }
-})
+// Meeting Minute Notifications API hooks
+export const useMeetingMinuteNotificationsApi = {
+  useList: (params?: any) => useQuery({
+    queryKey: ['meetingMinuteNotifications', params],
+    queryFn: async () => {
+      try {
+        const result = await meetingMinuteNotificationsService.list(params)
+        return result.data || []
+      } catch (error) {
+        console.error('Error fetching meeting minute notifications:', error)
+        return []
+      }
+    }
+  })
+}
+
+// Dashboard Configuration API hooks
+export const useDashboardConfigApi = {
+  useList: (params?: any) => useQuery({
+    queryKey: ['dashboardConfigs', params],
+    queryFn: async () => {
+      try {
+        const result = await dashboardConfigService.list(params)
+        return result.data || []
+      } catch (error) {
+        console.error('Error fetching dashboard configs:', error)
+        return []
+      }
+    }
+  })
+}
 
 // Mock data generators for Director Dashboard
 
